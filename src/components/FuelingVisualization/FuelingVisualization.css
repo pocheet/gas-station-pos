@@ -1,0 +1,82 @@
+/* src/components/FuelingVisualization/FuelingVisualization.css */
+.fueling-visualization {
+  background: linear-gradient(135deg, #1e1e32 0%, #1a1a2e 100%);
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #2a2a45;
+  animation: slideIn 0.5s ease-out;
+}
+
+.fueling-visualization.fueling {
+  border-color: #00d4aa;
+  box-shadow: 0 0 30px rgba(0, 212, 170, 0.1);
+}
+
+.visualization-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.visualization-header h3 {
+  font-size: 18px;
+  color: #e8e8f0;
+}
+
+.pump-badge {
+  padding: 4px 12px;
+  background: rgba(0, 212, 170, 0.1);
+  color: #00d4aa;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.nozzle-animation {
+  width: 200px;
+  height: 250px;
+  margin: 0 auto 20px;
+}
+
+.nozzle-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.fueling-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.fueling-speed {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px;
+  background: #12121f;
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.speed-label {
+  color: #6c7293;
+  font-size: 13px;
+}
+
+.speed-value {
+  color: #5b9bd5;
+  font-weight: 600;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

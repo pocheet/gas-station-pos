@@ -1,0 +1,98 @@
+/* src/components/Layout/Header.css */
+.header {
+  background: linear-gradient(135deg, #12121f 0%, #1a1a2e 100%);
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #2a2a45;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-logo {
+  font-size: 36px;
+  filter: drop-shadow(0 0 10px rgba(0, 212, 170, 0.3));
+}
+
+.header-left h1 {
+  font-size: 24px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #00d4aa, #5b9bd5);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+}
+
+.header-subtitle {
+  font-size: 12px;
+  color: #6c7293;
+  margin: 2px 0 0 0;
+}
+
+.header-center {
+  display: flex;
+  align-items: center;
+}
+
+.header-stats {
+  display: flex;
+  gap: 24px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(30, 30, 46, 0.6);
+  border-radius: 12px;
+  border: 1px solid #2a2a45;
+}
+
+.stat-icon {
+  font-size: 18px;
+}
+
+.stat-label {
+  color: #8b8ba7;
+  font-size: 13px;
+}
+
+.stat-value {
+  color: #00d4aa;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.header-time {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 22px;
+  font-weight: 600;
+  color: #e8e8f0;
+  font-family: 'Courier New', monospace;
+}
+
+.time-icon {
+  font-size: 18px;
+}
+
+.header-date {
+  font-size: 13px;
+  color: #6c7293;
+}

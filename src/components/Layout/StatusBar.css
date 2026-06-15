@@ -1,0 +1,52 @@
+/* src/components/Layout/StatusBar.css */
+.status-bar {
+  background: #12121f;
+  padding: 8px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #2a2a45;
+  font-size: 12px;
+  color: #6c7293;
+}
+
+.status-left,
+.status-center,
+.status-right {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff4757;
+  transition: background 0.3s ease;
+}
+
+.status-dot.connected {
+  background: #00d4aa;
+  box-shadow: 0 0 8px rgba(0, 212, 170, 0.5);
+}
+
+.status-label {
+  color: #5c5c7a;
+}
+
+.status-value {
+  color: #8b8ba7;
+  font-family: 'Courier New', monospace;
+}
+
+.status-value.has-messages {
+  color: #ffd700;
+  font-weight: 600;
+}

@@ -1,0 +1,16 @@
+/* src/components/common/LoadingSpinner.css */
+.loading-spinner-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.loading-spinner {
+  animation: spinner-pulse 2s ease-in-out infinite;
+}
+
+@keyframes spinner-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}

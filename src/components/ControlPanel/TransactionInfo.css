@@ -1,0 +1,130 @@
+/* src/components/ControlPanel/TransactionInfo.css */
+.transaction-info {
+  background: #1e1e32;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #2a2a45;
+}
+
+.transaction-info h3 {
+  font-size: 14px;
+  color: #6c7293;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.transaction-info.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+}
+
+.empty-state {
+  text-align: center;
+  color: #5c5c7a;
+}
+
+.empty-icon {
+  font-size: 32px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.transaction-progress {
+  margin-bottom: 16px;
+}
+
+.progress-bar-large {
+  height: 8px;
+  background: #2a2a45;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress-fill-large {
+  height: 100%;
+  background: linear-gradient(90deg, #00d4aa, #5b9bd5);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progress-details {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #6c7293;
+}
+
+.transaction-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.tx-item {
+  padding: 12px;
+  background: #12121f;
+  border-radius: 8px;
+  border: 1px solid #2a2a45;
+}
+
+.tx-label {
+  display: block;
+  font-size: 11px;
+  color: #6c7293;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.tx-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #e8e8f0;
+}
+
+.tx-item.volume .tx-value {
+  color: #00d4aa;
+}
+
+.tx-item.amount .tx-value {
+  color: #ffd700;
+}
+
+.transaction-timestamps {
+  margin-bottom: 12px;
+}
+
+.timestamp {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 12px;
+}
+
+.ts-label {
+  color: #6c7293;
+}
+
+.ts-value {
+  color: #8b8ba7;
+}
+
+.near-completion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 165, 2, 0.1);
+  border: 1px solid rgba(255, 165, 2, 0.3);
+  border-radius: 8px;
+  color: #ffa502;
+  font-size: 13px;
+}
+
+.warning-icon {
+  font-size: 16px;
+}
