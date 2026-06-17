@@ -68,7 +68,7 @@ export default function PumpSidebar({ pumps, selectedPump, onSelectPump }: PumpS
                   <div className="flex items-center justify-center w-14 h-14 bg-[#16213e] rounded-lg mr-3 relative">
                     <LocalGasStation sx={{ fontSize: 28, color: '#00d4aa' }} />
                     <span className="absolute -top-1 -right-1 bg-[#00d4aa] text-black text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                      {pump.Nozzles.length}
+                      {pump.Transaction.NozzleNumber}
                     </span>
                   </div>
                   

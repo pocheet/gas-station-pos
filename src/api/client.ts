@@ -6,6 +6,7 @@ const apiClient = axios.create({
   baseURL: import.meta.env.DEV ? '' : 'http://rpi.directvision.ru:4001',
   headers: {
     'Accept': 'application/json',
+    'Content-Type': 'application/json',
   },
   timeout: 10000,
 });
@@ -21,5 +22,50 @@ export const stateApi = {
   getEquipmentState: async () => {
     const { data } = await apiClient.get('/api/v1/GetFuelEquipmentValues');
     return EquipmentStateSchema.parse(data);
+  },
+};
+
+export interface LockPumpRequest {
+  pumpLockTag: string;
+  pumpNumber: number;
+}
+
+export interface StartTransactionRequest {
+  Tags?: Record<string, any>;
+  externalId?: string;
+  isValueAmount: boolean;
+  nozzleNumber: number;
+  payFormCode: number;
+  pricePerUnit: number;
+  pumpLockTag: string;
+  pumpNumber: number;
+  shiftId?: string;
+  tankNumber?: number;
+  unlockOnSuccess: boolean;
+  value: number;
+}
+
+export interface UnlockPumpRequest {
+  pumpLockTag: string;
+  pumpNumber: number;
+}
+
+export const pumpApi = {
+  // Блокировка ТРК
+  lockPump: async (request: LockPumpRequest) => {
+    const { data } = await apiClient.post('/api/v1/LockPump', request);
+    return data;
+  },
+
+  // Запуск транзакции
+  startTransaction: async (request: StartTransactionRequest) => {
+    const { data } = await apiClient.post('/api/v1/StartPumpTransaction', request);
+    return data;
+  },
+
+  // Разблокировка ТРК
+  unlockPump: async (request: UnlockPumpRequest) => {
+    const { data } = await apiClient.post('/api/v1/UnlockPump', request);
+    return data;
   },
 };
