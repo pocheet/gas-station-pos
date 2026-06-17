@@ -45,6 +45,22 @@ export interface StartTransactionRequest {
   value: number;
 }
 
+export interface ResetTransactionRequest {
+  Tags?: Record<string, any>;
+  amount?: number;
+  emergencyAmount?: number;
+  emergencyReset?: boolean;
+  emergencyVolume?: number;
+  externalId?: string;
+  payFormCode?: number;
+  pricePerUnit?: number;
+  pumpLockTag: string;
+  pumpNumber: number;
+  shiftId?: string;
+  tankNumber?: number;
+  unlockOnSuccess: boolean;
+}
+
 export interface UnlockPumpRequest {
   pumpLockTag: string;
   pumpNumber: number;
@@ -63,6 +79,12 @@ export const pumpApi = {
     return data;
   },
 
+  // Сброс транзакции
+  resetTransaction: async (request: ResetTransactionRequest) => {
+    const { data } = await apiClient.post('/api/v1/ResetPumpTransaction', request);
+    return data;
+  },
+  
   // Разблокировка ТРК
   unlockPump: async (request: UnlockPumpRequest) => {
     const { data } = await apiClient.post('/api/v1/UnlockPump', request);
