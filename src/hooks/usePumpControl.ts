@@ -1,6 +1,6 @@
 // src/hooks/usePumpControl.ts
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { pumpApi, type StartTransactionRequest, type ResetTransactionRequest } from '../api/client';
+import { pumpApi, type StartTransactionRequest, type ResetTransactionRequest, type StopTransactionRequest } from '../api/client';
 import { useState } from 'react';
 
 export function usePumpControl() {
@@ -26,14 +26,12 @@ export function usePumpControl() {
       const lockTag = generateLockTag();
 
       try {
-        // Шаг 1: Блокируем ТРК
         console.log('🔒 Locking pump for start...', { pumpNumber: params.pumpNumber });
         await pumpApi.lockPump({
           pumpLockTag: lockTag,
           pumpNumber: params.pumpNumber,
         });
 
-        // Шаг 2: Запускаем транзакцию
         console.log('⛽ Starting transaction...');
         const transactionRequest: StartTransactionRequest = {
           pumpLockTag: lockTag,
@@ -49,8 +47,6 @@ export function usePumpControl() {
         const result = await pumpApi.startTransaction(transactionRequest);
         console.log('✅ Transaction started:', result);
 
-        // Шаг 3: Разблокируем ТРК
-        console.log('🔓 Unlocking pump...');
         await pumpApi.unlockPump({
           pumpLockTag: lockTag,
           pumpNumber: params.pumpNumber,
@@ -61,7 +57,62 @@ export function usePumpControl() {
       } catch (err: any) {
         console.error('❌ Failed to start fueling:', err);
         
-        // Пытаемся разблокировать в случае ошибки
+        try {
+          await pumpApi.unlockPump({
+            pumpLockTag: lockTag,
+            pumpNumber: params.pumpNumber,
+          });
+        } catch (unlockErr) {
+          console.error('Failed to unlock after error:', unlockErr);
+        }
+        
+        throw err;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['equipmentState'] });
+    },
+    onError: (err: any) => {
+      const message = err.response?.data?.message || err.response?.data?.title || err.message || 'Неизвестная ошибка';
+      setError(message);
+    },
+  });
+
+  // Остановка транзакции
+  const stopTransactionMutation = useMutation({
+    mutationFn: async (params: {
+      pumpNumber: number;
+    }) => {
+      setError(null);
+      setSuccess(null);
+      const lockTag = generateLockTag();
+
+      try {
+        console.log('🔒 Locking pump for stop...', { pumpNumber: params.pumpNumber });
+        await pumpApi.lockPump({
+          pumpLockTag: lockTag,
+          pumpNumber: params.pumpNumber,
+        });
+
+        console.log('🛑 Stopping transaction...');
+        const stopRequest: StopTransactionRequest = {
+          pumpLockTag: lockTag,
+          pumpNumber: params.pumpNumber,
+        };
+
+        const result = await pumpApi.stopTransaction(stopRequest);
+        console.log('✅ Transaction stopped:', result);
+
+        await pumpApi.unlockPump({
+          pumpLockTag: lockTag,
+          pumpNumber: params.pumpNumber,
+        });
+
+        setSuccess('Налив остановлен');
+        return result;
+      } catch (err: any) {
+        console.error('❌ Failed to stop transaction:', err);
+        
         try {
           await pumpApi.unlockPump({
             pumpLockTag: lockTag,
@@ -96,14 +147,12 @@ export function usePumpControl() {
       const lockTag = generateLockTag();
 
       try {
-        // Шаг 1: Блокируем ТРК
         console.log('🔒 Locking pump for reset...', { pumpNumber: params.pumpNumber });
         await pumpApi.lockPump({
           pumpLockTag: lockTag,
           pumpNumber: params.pumpNumber,
         });
 
-        // Шаг 2: Сбрасываем транзакцию
         console.log('🔄 Resetting transaction...');
         const resetRequest: ResetTransactionRequest = {
           pumpLockTag: lockTag,
@@ -117,19 +166,16 @@ export function usePumpControl() {
         const result = await pumpApi.resetTransaction(resetRequest);
         console.log('✅ Transaction reset:', result);
 
-        // Шаг 3: Разблокируем ТРК
-        console.log('🔓 Unlocking pump...');
         await pumpApi.unlockPump({
           pumpLockTag: lockTag,
           pumpNumber: params.pumpNumber,
         });
 
-        setSuccess('Транзакция успешно завершена');
+        setSuccess(params.emergencyReset ? 'Аварийный сброс выполнен' : 'Транзакция успешно завершена');
         return result;
       } catch (err: any) {
         console.error('❌ Failed to reset transaction:', err);
         
-        // Пытаемся разблокировать в случае ошибки
         try {
           await pumpApi.unlockPump({
             pumpLockTag: lockTag,
@@ -154,6 +200,8 @@ export function usePumpControl() {
   return {
     startFueling: startFuelingMutation.mutate,
     isStarting: startFuelingMutation.isPending,
+    stopTransaction: stopTransactionMutation.mutate,
+    isStopping: stopTransactionMutation.isPending,
     resetTransaction: resetTransactionMutation.mutate,
     isResetting: resetTransactionMutation.isPending,
     error,

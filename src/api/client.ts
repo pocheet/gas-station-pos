@@ -61,6 +61,11 @@ export interface ResetTransactionRequest {
   unlockOnSuccess: boolean;
 }
 
+export interface StopTransactionRequest {
+  pumpLockTag: string;
+  pumpNumber: number;
+}
+
 export interface UnlockPumpRequest {
   pumpLockTag: string;
   pumpNumber: number;
@@ -82,6 +87,12 @@ export const pumpApi = {
   // Сброс транзакции
   resetTransaction: async (request: ResetTransactionRequest) => {
     const { data } = await apiClient.post('/api/v1/ResetPumpTransaction', request);
+    return data;
+  },
+
+  // Остановка транзакции
+  stopTransaction: async (request: StopTransactionRequest) => {
+    const { data } = await apiClient.post('/api/v1/StopPumpTransaction', request);
     return data;
   },
   

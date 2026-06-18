@@ -21,6 +21,8 @@ export default function PumpControl({ pumpNumber, config, state }: PumpControlPr
   const { 
     startFueling, 
     isStarting, 
+    stopTransaction,
+    isStopping,
     resetTransaction, 
     isResetting, 
     error, 
@@ -83,6 +85,11 @@ export default function PumpControl({ pumpNumber, config, state }: PumpControlPr
       pricePerUnit: transaction.PricePerUnit,
       emergencyReset: false,
     });
+  };
+
+  const handleStopTransaction = () => {
+    if (!pumpNumber) return;
+    stopTransaction({ pumpNumber });
   };
 
   const handleEmergencyReset = () => {
@@ -151,10 +158,22 @@ export default function PumpControl({ pumpNumber, config, state }: PumpControlPr
           pumpNumber={pumpNumber}
           onReset={handleResetTransaction}
           onEmergencyReset={handleEmergencyReset}
+          onStop={handleStopTransaction}
           isResetting={isResetting}
+          isStopping={isStopping}
           canReset={canReset}
         />
       )}
+      {/* {(isPumpBusy || canReset || hasActiveTransaction) && (
+        <TransactionInfo
+          pump={pump!}
+          pumpNumber={pumpNumber}
+          onReset={handleResetTransaction}
+          onEmergencyReset={handleEmergencyReset}
+          isResetting={isResetting}
+          canReset={canReset}
+        />
+      )} */}
 
       {/* Если ТРК занята другим процессом */}
       {!isPumpReady && !isPumpBusy && !canReset && !hasActiveTransaction && (
