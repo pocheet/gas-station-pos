@@ -54,23 +54,17 @@ export default function TransactionInfo({
       }`}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-white">
-            {isFueling && '⛽ Идет налив'}
-            {isStopped && '⏸️ Налив остановлен'}
-            {canReset && !isStopped && '✅ Налив завершен'}
+            {isFueling && 'Идет отпуск'}
+            {isStopped && 'Налив остановлен'}
+            {canReset && !isStopped && 'Отпуск завершен'}
           </h2>
-          <span className="text-sm text-gray-400">
-            ID: {transaction.TransactionId.substring(0, 8)}...
-          </span>
         </div>
 
         {/* Прогресс бар */}
-        {transaction.PresetVolume > 0 && (
+        {(isFueling || isStopped) && transaction.PresetVolume > 0 && (
           <div className="mb-4">
             <div className="flex justify-between text-sm mb-1">
               <span className="text-gray-400">Прогресс налива</span>
-              <span className={`font-semibold ${isStopped ? 'text-[#ffa502]' : 'text-[#00d4aa]'}`}>
-                {progress.toFixed(1)}%
-              </span>
             </div>
             <div className="h-3 bg-[#0a0a14] rounded-full overflow-hidden relative">
               <div 
@@ -94,7 +88,7 @@ export default function TransactionInfo({
         )}
 
         {/* Flow индикатор при наливе */}
-        {isFueling && (
+        {/* {isFueling && (
           <div className="flex justify-center gap-1 mb-4">
             {[...Array(5)].map((_, i) => (
               <div
@@ -104,7 +98,7 @@ export default function TransactionInfo({
               />
             ))}
           </div>
-        )}
+        )} */}
 
         {/* Основные показатели */}
         <div className="grid grid-cols-2 gap-3 mb-4">
@@ -179,8 +173,7 @@ export default function TransactionInfo({
                 </>
               ) : (
                 <>
-                  <span className="mr-2 text-xl">🛑</span>
-                  Остановить налив
+                  Остановить
                 </>
               )}
             </Button>
@@ -210,7 +203,6 @@ export default function TransactionInfo({
                   </>
                 ) : (
                   <>
-                    <span className="mr-2">▶️</span>
                     Продолжить
                   </>
                 )}
@@ -237,7 +229,6 @@ export default function TransactionInfo({
                   </>
                 ) : (
                   <>
-                    <span className="mr-2">✅</span>
                     Завершить
                   </>
                 )}
@@ -269,7 +260,6 @@ export default function TransactionInfo({
                 </>
               ) : (
                 <>
-                  <span className="mr-2">✅</span>
                   Завершить
                 </>
               )}
@@ -277,40 +267,6 @@ export default function TransactionInfo({
           )}
         </div>
       </div>
-
-      {/* Информационные подсказки */}
-      {isFueling && (
-        <div className="p-4 bg-[#1a1a2e] rounded-lg border border-gray-700">
-          <div className="flex items-start gap-3">
-            <span className="text-2xl">💡</span>
-            <div>
-              <p className="text-gray-300 text-sm font-semibold mb-1">
-                Налив выполняется
-              </p>
-              <p className="text-gray-500 text-xs">
-                Нажмите «Остановить» чтобы приостановить налив. 
-                После остановки можно продолжить или завершить транзакцию.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {isStopped && (
-        <div className="p-4 bg-[#1a1a2e] rounded-lg border border-[#ffa502]/50">
-          <div className="flex items-start gap-3">
-            <span className="text-2xl">⏸️</span>
-            <div>
-              <p className="text-[#ffa502] text-sm font-semibold mb-1">
-                Налив остановлен
-              </p>
-              <p className="text-gray-500 text-xs">
-                Вы можете продолжить налив или завершить транзакцию.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
 
       <style>{`
         @keyframes shimmer {

@@ -99,13 +99,14 @@ export default function PumpControl({ pumpNumber, config, state }: PumpControlPr
   const getStatusText = () => {
     if (!pump) return '';
     switch (pump.Status) {
-      case PUMP_STATUS.OFF: return '✅ Готов к работе';
-      case PUMP_STATUS.BUSY: return '⛽ Идет налив';
-      case PUMP_STATUS.BUSY_OVERFLOW: return '⚠️ Перелив!';
-      case PUMP_STATUS.WAIT_RESET: return '🔄 Ожидает сброса';
-      case PUMP_STATUS.WAIT_OFF_REMAINDER: return '⏸️ Ожидает продолжения';
-      case PUMP_STATUS.WAIT_OFF: return '⬆️ Повесьте пистолет';
-      default: return '⏳ Обработка';
+      case PUMP_STATUS.OFF: return 'Свободна';
+      case PUMP_STATUS.BUSY: return 'Идет отпуск';
+      case PUMP_STATUS.BUSY_OVERFLOW: return 'Перелив';
+      case PUMP_STATUS.WAIT_RESET: return 'Ожидает сброса';
+      case PUMP_STATUS.WAIT_OFF_REMAINDER: return 'Остаток ( )';
+      case PUMP_STATUS.PRESET: return 'Установлена доза';
+      case PUMP_STATUS.WAIT_OFF: return 'Повесьте пистолет';
+      default: return 'Обработка';
     }
   };
 

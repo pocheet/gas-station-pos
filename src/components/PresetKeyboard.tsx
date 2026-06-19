@@ -54,7 +54,7 @@ export default function PresetKeyboard({
     : null;
 
   return (
-    <div className="bg-[#1a1a2e] rounded-lg p-4">
+    <div className="bg-[#1a1a2e] rounded-lg p-4 mb-4">
       {/* Display */}
       <div className="bg-[#0a0a14] rounded-lg p-4 mb-4">
         <div className="text-center">
@@ -164,7 +164,7 @@ export default function PresetKeyboard({
               <span>Запуск...</span>
             </>
           ) : (
-            '⛽ Ввод'
+            'Ввод'
           )}
         </button>
       </div>
@@ -184,19 +184,6 @@ export default function PresetKeyboard({
             {mode === 'volume' ? `${qv} л.` : `+${qv} руб.`}
           </button>
         ))}
-      </div>
-
-      {/* Статус выбора */}
-      <div className="mt-4 text-center text-sm">
-        {!selectedNozzle ? (
-          <span className="text-[#ffa502]">⚠️ Выберите тип топлива</span>
-        ) : value === '0' ? (
-          <span className="text-[#ffa502]">⚠️ Укажите объем или сумму</span>
-        ) : canStart ? (
-          <span className="text-[#00d4aa]">✅ Готов к запуску</span>
-        ) : (
-          <span className="text-[#ff4757]">❌ ТРК не готова к работе</span>
-        )}
       </div>
     </div>
   );

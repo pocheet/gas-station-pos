@@ -12,10 +12,10 @@ export default function PumpSidebar({ pumps, selectedPump, onSelectPump }: PumpS
   const getStatusColor = (status: number) => {
     switch (status) {
       case PUMP_STATUS.OFF: return '#b0f26d';
-      case PUMP_STATUS.PRESET: return '#b0f26d';
-      case PUMP_STATUS.BUSY: return 'blue';
+      case PUMP_STATUS.PRESET: return '#38bdf8';
+      case PUMP_STATUS.BUSY: return '#3b82f6'; // #0284c7
       case PUMP_STATUS.ERROR: return '#ff4757';
-      case PUMP_STATUS.WAIT_OFF_REMAINDER: return '#ffd700';
+      case PUMP_STATUS.WAIT_OFF_REMAINDER: return '#ffa502';
 
       default: return '#6c7293';
     }
