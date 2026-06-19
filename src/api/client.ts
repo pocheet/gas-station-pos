@@ -66,6 +66,12 @@ export interface StopTransactionRequest {
   pumpNumber: number;
 }
 
+export interface ContinueTransactionRequest {
+  pumpLockTag: string;
+  pumpNumber: number;
+  unlockOnSuccess: boolean;
+}
+
 export interface UnlockPumpRequest {
   pumpLockTag: string;
   pumpNumber: number;
@@ -93,6 +99,12 @@ export const pumpApi = {
   // Остановка транзакции
   stopTransaction: async (request: StopTransactionRequest) => {
     const { data } = await apiClient.post('/api/v1/StopPumpTransaction', request);
+    return data;
+  },
+
+  // Продолжение транзакции
+  continueTransaction: async (request: ContinueTransactionRequest) => {
+    const { data } = await apiClient.post('/api/v1/ContinuePumpTransaction', request);
     return data;
   },
   

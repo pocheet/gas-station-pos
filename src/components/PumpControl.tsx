@@ -5,7 +5,7 @@ import { usePumpControl } from '../hooks/usePumpControl';
 import NozzleSelector from './NozzleSelector';
 import PresetKeyboard from './PresetKeyboard';
 import TransactionInfo from './TransactionInfo';
-import { Alert, Snackbar, Button } from '@mui/material';
+import { Alert, Snackbar } from '@mui/material';
 
 interface PumpControlProps {
   pumpNumber: number | null;
@@ -23,6 +23,8 @@ export default function PumpControl({ pumpNumber, config, state }: PumpControlPr
     isStarting, 
     stopTransaction,
     isStopping,
+    continueTransaction,
+    isContinuing,
     resetTransaction, 
     isResetting, 
     error, 
@@ -42,12 +44,12 @@ export default function PumpControl({ pumpNumber, config, state }: PumpControlPr
   const pump = state?.PumpValuesCollection.find(p => p.Number === pumpNumber);
   const pumpConfig = config?.Pumps.find(p => p.Number === pumpNumber);
 
-  // Определяем статусы
   const isPumpReady = pump?.Status === PUMP_STATUS.OFF;
   const isPumpBusy = pump?.Status === PUMP_STATUS.BUSY || pump?.Status === PUMP_STATUS.BUSY_OVERFLOW;
   const canReset = pump?.Status === PUMP_STATUS.WAIT_OFF_REMAINDER || 
                    pump?.Status === PUMP_STATUS.WAIT_OFF_OVERFLOW || 
                    pump?.Status === PUMP_STATUS.WAIT_RESET;
+  const canContinue = pump?.Status === PUMP_STATUS.WAIT_OFF_REMAINDER;
   
   const hasActiveTransaction = pump?.Transaction && 
     pump.Transaction.TransactionId !== '00000000-0000-0000-0000-000000000000';
@@ -74,30 +76,23 @@ export default function PumpControl({ pumpNumber, config, state }: PumpControlPr
     });
   };
 
-  const handleResetTransaction = () => {
-    if (!pumpNumber || !pump) return;
-
-    const transaction = pump.Transaction;
-    
-    resetTransaction({
-      pumpNumber,
-      amount: transaction.RealTimeAmount,
-      pricePerUnit: transaction.PricePerUnit,
-      emergencyReset: false,
-    });
-  };
-
   const handleStopTransaction = () => {
     if (!pumpNumber) return;
     stopTransaction({ pumpNumber });
   };
 
-  const handleEmergencyReset = () => {
+  const handleContinueTransaction = () => {
     if (!pumpNumber) return;
-    
+    continueTransaction({ pumpNumber });
+  };
+
+  const handleResetTransaction = () => {
+    if (!pumpNumber || !pump) return;
+    const transaction = pump.Transaction;
     resetTransaction({
       pumpNumber,
-      emergencyReset: true,
+      amount: transaction.RealTimeAmount,
+      pricePerUnit: transaction.PricePerUnit,
     });
   };
 
@@ -157,23 +152,15 @@ export default function PumpControl({ pumpNumber, config, state }: PumpControlPr
           pump={pump!}
           pumpNumber={pumpNumber}
           onReset={handleResetTransaction}
-          onEmergencyReset={handleEmergencyReset}
           onStop={handleStopTransaction}
+          onContinue={handleContinueTransaction}
           isResetting={isResetting}
           isStopping={isStopping}
+          isContinuing={isContinuing}
           canReset={canReset}
+          canContinue={canContinue}
         />
       )}
-      {/* {(isPumpBusy || canReset || hasActiveTransaction) && (
-        <TransactionInfo
-          pump={pump!}
-          pumpNumber={pumpNumber}
-          onReset={handleResetTransaction}
-          onEmergencyReset={handleEmergencyReset}
-          isResetting={isResetting}
-          canReset={canReset}
-        />
-      )} */}
 
       {/* Если ТРК занята другим процессом */}
       {!isPumpReady && !isPumpBusy && !canReset && !hasActiveTransaction && (

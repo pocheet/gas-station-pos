@@ -1,6 +1,12 @@
 // src/hooks/usePumpControl.ts
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { pumpApi, type StartTransactionRequest, type ResetTransactionRequest, type StopTransactionRequest } from '../api/client';
+import { pumpApi } from '../api/client';
+import type {
+  StartTransactionRequest, 
+  ResetTransactionRequest, 
+  StopTransactionRequest,
+  ContinueTransactionRequest 
+} from '../api/client';
 import { useState } from 'react';
 
 export function usePumpControl() {
@@ -26,7 +32,7 @@ export function usePumpControl() {
       const lockTag = generateLockTag();
 
       try {
-        console.log('🔒 Locking pump for start...', { pumpNumber: params.pumpNumber });
+        console.log('🔒 Locking pump for start...');
         await pumpApi.lockPump({
           pumpLockTag: lockTag,
           pumpNumber: params.pumpNumber,
@@ -45,7 +51,7 @@ export function usePumpControl() {
         };
 
         const result = await pumpApi.startTransaction(transactionRequest);
-        console.log('✅ Transaction started:', result);
+        console.log('✅ Transaction started');
 
         await pumpApi.unlockPump({
           pumpLockTag: lockTag,
@@ -88,7 +94,7 @@ export function usePumpControl() {
       const lockTag = generateLockTag();
 
       try {
-        console.log('🔒 Locking pump for stop...', { pumpNumber: params.pumpNumber });
+        console.log('🔒 Locking pump for stop...');
         await pumpApi.lockPump({
           pumpLockTag: lockTag,
           pumpNumber: params.pumpNumber,
@@ -101,7 +107,7 @@ export function usePumpControl() {
         };
 
         const result = await pumpApi.stopTransaction(stopRequest);
-        console.log('✅ Transaction stopped:', result);
+        console.log('✅ Transaction stopped');
 
         await pumpApi.unlockPump({
           pumpLockTag: lockTag,
@@ -134,47 +140,41 @@ export function usePumpControl() {
     },
   });
 
-  // Сброс транзакции
-  const resetTransactionMutation = useMutation({
+  // Продолжение транзакции
+  const continueTransactionMutation = useMutation({
     mutationFn: async (params: {
       pumpNumber: number;
-      amount?: number;
-      pricePerUnit?: number;
-      emergencyReset?: boolean;
     }) => {
       setError(null);
       setSuccess(null);
       const lockTag = generateLockTag();
 
       try {
-        console.log('🔒 Locking pump for reset...', { pumpNumber: params.pumpNumber });
+        console.log('🔒 Locking pump for continue...');
         await pumpApi.lockPump({
           pumpLockTag: lockTag,
           pumpNumber: params.pumpNumber,
         });
 
-        console.log('🔄 Resetting transaction...');
-        const resetRequest: ResetTransactionRequest = {
+        console.log('▶️ Continuing transaction...');
+        const continueRequest: ContinueTransactionRequest = {
           pumpLockTag: lockTag,
           pumpNumber: params.pumpNumber,
-          amount: params.amount,
-          pricePerUnit: params.pricePerUnit,
-          emergencyReset: params.emergencyReset || false,
           unlockOnSuccess: true,
         };
 
-        const result = await pumpApi.resetTransaction(resetRequest);
-        console.log('✅ Transaction reset:', result);
+        const result = await pumpApi.continueTransaction(continueRequest);
+        console.log('✅ Transaction continued');
 
         await pumpApi.unlockPump({
           pumpLockTag: lockTag,
           pumpNumber: params.pumpNumber,
         });
 
-        setSuccess(params.emergencyReset ? 'Аварийный сброс выполнен' : 'Транзакция успешно завершена');
+        setSuccess('Налив продолжен');
         return result;
       } catch (err: any) {
-        console.error('❌ Failed to reset transaction:', err);
+        console.error('❌ Failed to continue transaction:', err);
         
         try {
           await pumpApi.unlockPump({
@@ -197,11 +197,70 @@ export function usePumpControl() {
     },
   });
 
+  // src/hooks/usePumpControl.ts - обновляем resetTransactionMutation
+
+  const resetTransactionMutation = useMutation({
+    mutationFn: async (params: {
+      pumpNumber: number;
+      amount?: number;
+      pricePerUnit?: number;
+    }) => {
+      setError(null);
+      setSuccess(null);
+      const lockTag = generateLockTag();
+
+      try {
+        await pumpApi.lockPump({
+          pumpLockTag: lockTag,
+          pumpNumber: params.pumpNumber,
+        });
+
+        const resetRequest: ResetTransactionRequest = {
+          pumpLockTag: lockTag,
+          pumpNumber: params.pumpNumber,
+          amount: params.amount,
+          pricePerUnit: params.pricePerUnit,
+          emergencyReset: false,
+          unlockOnSuccess: true,
+        };
+
+        const result = await pumpApi.resetTransaction(resetRequest);
+
+        await pumpApi.unlockPump({
+          pumpLockTag: lockTag,
+          pumpNumber: params.pumpNumber,
+        });
+
+        setSuccess('Транзакция успешно завершена');
+        return result;
+      } catch (err: any) {
+        try {
+          await pumpApi.unlockPump({
+            pumpLockTag: lockTag,
+            pumpNumber: params.pumpNumber,
+          });
+        } catch (unlockErr) {
+          console.error('Failed to unlock after error:', unlockErr);
+        }
+        throw err;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['equipmentState'] });
+    },
+    onError: (err: any) => {
+      const message = err.response?.data?.message || err.response?.data?.title || err.message || 'Неизвестная ошибка';
+      setError(message);
+    },
+  });
+
   return {
     startFueling: startFuelingMutation.mutate,
     isStarting: startFuelingMutation.isPending,
     stopTransaction: stopTransactionMutation.mutate,
     isStopping: stopTransactionMutation.isPending,
+    continueTransaction: continueTransactionMutation.mutate,
+    isContinuing: continueTransactionMutation.isPending,
     resetTransaction: resetTransactionMutation.mutate,
     isResetting: resetTransactionMutation.isPending,
     error,
