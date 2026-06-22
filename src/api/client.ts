@@ -52,7 +52,7 @@ export interface ResetTransactionRequest {
   emergencyReset?: boolean;
   emergencyVolume?: number;
   externalId?: string;
-  payFormCode?: number;
+  payFormCode?: number; // ← убедитесь что есть
   pricePerUnit?: number;
   pumpLockTag: string;
   pumpNumber: number;

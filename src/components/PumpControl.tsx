@@ -71,6 +71,7 @@ export default function PumpControl({
       pumpNumber,
       amount: transaction.RealTimeAmount,
       pricePerUnit: transaction.PricePerUnit,
+      payFormCode: transaction.PayFormCode || 1, // Берем из транзакции или по умолчанию
     });
   };
 

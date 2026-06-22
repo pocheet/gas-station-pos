@@ -46,6 +46,7 @@ export const TransactionSchema = z.object({
   PricePerUnit: z.number(),
   ProductId: z.string(),
   NozzleNumber: z.number(),
+  PayFormCode: z.number().optional(), 
 });
 
 export const PumpValueSchema = z.object({
@@ -75,7 +76,6 @@ export type Configuration = z.infer<typeof ConfigurationSchema>;
 export type PumpValue = z.infer<typeof PumpValueSchema>;
 export type EquipmentState = z.infer<typeof EquipmentStateSchema>;
 
-// Статусы как константы
 export const PUMP_STATUS = {
   ERROR: 0,
   OFF: 1, // Свободен
@@ -89,3 +89,17 @@ export const PUMP_STATUS = {
   WAIT_OFF: 9,
   WAIT_RESET: 10, // Ожидает обработки
 } as const;
+
+export const PAYMENT_METHODS = {
+  TECHNOLOGICAL: 1,
+  CASH: 2,
+  CASHLESS: 3,
+} as const;
+
+export type PaymentMethod = typeof PAYMENT_METHODS[keyof typeof PAYMENT_METHODS];
+
+export const PAYMENT_METHOD_LABELS: Record<number, string> = {
+  [PAYMENT_METHODS.TECHNOLOGICAL]: 'Технологический',
+  [PAYMENT_METHODS.CASH]: 'Наличный',
+  [PAYMENT_METHODS.CASHLESS]: 'Безналичный',
+};

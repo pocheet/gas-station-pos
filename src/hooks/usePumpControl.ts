@@ -19,6 +19,8 @@ export function usePumpControl() {
   };
 
   // Запуск налива
+// src/hooks/usePumpControl.ts - обновляем только параметры startFuelingMutation и resetTransactionMutation
+
   const startFuelingMutation = useMutation({
     mutationFn: async (params: {
       pumpNumber: number;
@@ -26,6 +28,7 @@ export function usePumpControl() {
       pricePerUnit: number;
       value: number;
       isValueAmount: boolean;
+      payFormCode: number; // Добавляем
     }) => {
       setError(null);
       setSuccess(null);
@@ -46,7 +49,7 @@ export function usePumpControl() {
           isValueAmount: params.isValueAmount,
           value: params.value,
           pricePerUnit: params.pricePerUnit,
-          payFormCode: 1,
+          payFormCode: params.payFormCode, // Передаем способ оплаты
           unlockOnSuccess: true,
         };
 
@@ -72,6 +75,64 @@ export function usePumpControl() {
           console.error('Failed to unlock after error:', unlockErr);
         }
         
+        throw err;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['equipmentState'] });
+    },
+    onError: (err: any) => {
+      const message = err.response?.data?.message || err.response?.data?.title || err.message || 'Неизвестная ошибка';
+      setError(message);
+    },
+  });
+
+  // В resetTransactionMutation тоже добавляем payFormCode
+  const resetTransactionMutation = useMutation({
+    mutationFn: async (params: {
+      pumpNumber: number;
+      amount?: number;
+      pricePerUnit?: number;
+      payFormCode?: number; // Добавляем
+    }) => {
+      setError(null);
+      setSuccess(null);
+      const lockTag = generateLockTag();
+
+      try {
+        await pumpApi.lockPump({
+          pumpLockTag: lockTag,
+          pumpNumber: params.pumpNumber,
+        });
+
+        const resetRequest: ResetTransactionRequest = {
+          pumpLockTag: lockTag,
+          pumpNumber: params.pumpNumber,
+          amount: params.amount,
+          pricePerUnit: params.pricePerUnit,
+          payFormCode: params.payFormCode, // Передаем способ оплаты
+          emergencyReset: false,
+          unlockOnSuccess: true,
+        };
+
+        const result = await pumpApi.resetTransaction(resetRequest);
+
+        await pumpApi.unlockPump({
+          pumpLockTag: lockTag,
+          pumpNumber: params.pumpNumber,
+        });
+
+        setSuccess('Транзакция успешно завершена');
+        return result;
+      } catch (err: any) {
+        try {
+          await pumpApi.unlockPump({
+            pumpLockTag: lockTag,
+            pumpNumber: params.pumpNumber,
+          });
+        } catch (unlockErr) {
+          console.error('Failed to unlock after error:', unlockErr);
+        }
         throw err;
       }
     },
@@ -199,60 +260,60 @@ export function usePumpControl() {
 
   // src/hooks/usePumpControl.ts - обновляем resetTransactionMutation
 
-  const resetTransactionMutation = useMutation({
-    mutationFn: async (params: {
-      pumpNumber: number;
-      amount?: number;
-      pricePerUnit?: number;
-    }) => {
-      setError(null);
-      setSuccess(null);
-      const lockTag = generateLockTag();
+  // const resetTransactionMutation = useMutation({
+  //   mutationFn: async (params: {
+  //     pumpNumber: number;
+  //     amount?: number;
+  //     pricePerUnit?: number;
+  //   }) => {
+  //     setError(null);
+  //     setSuccess(null);
+  //     const lockTag = generateLockTag();
 
-      try {
-        await pumpApi.lockPump({
-          pumpLockTag: lockTag,
-          pumpNumber: params.pumpNumber,
-        });
+  //     try {
+  //       await pumpApi.lockPump({
+  //         pumpLockTag: lockTag,
+  //         pumpNumber: params.pumpNumber,
+  //       });
 
-        const resetRequest: ResetTransactionRequest = {
-          pumpLockTag: lockTag,
-          pumpNumber: params.pumpNumber,
-          amount: params.amount,
-          pricePerUnit: params.pricePerUnit,
-          emergencyReset: false,
-          unlockOnSuccess: true,
-        };
+  //       const resetRequest: ResetTransactionRequest = {
+  //         pumpLockTag: lockTag,
+  //         pumpNumber: params.pumpNumber,
+  //         amount: params.amount,
+  //         pricePerUnit: params.pricePerUnit,
+  //         emergencyReset: false,
+  //         unlockOnSuccess: true,
+  //       };
 
-        const result = await pumpApi.resetTransaction(resetRequest);
+  //       const result = await pumpApi.resetTransaction(resetRequest);
 
-        await pumpApi.unlockPump({
-          pumpLockTag: lockTag,
-          pumpNumber: params.pumpNumber,
-        });
+  //       await pumpApi.unlockPump({
+  //         pumpLockTag: lockTag,
+  //         pumpNumber: params.pumpNumber,
+  //       });
 
-        setSuccess('Транзакция успешно завершена');
-        return result;
-      } catch (err: any) {
-        try {
-          await pumpApi.unlockPump({
-            pumpLockTag: lockTag,
-            pumpNumber: params.pumpNumber,
-          });
-        } catch (unlockErr) {
-          console.error('Failed to unlock after error:', unlockErr);
-        }
-        throw err;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['equipmentState'] });
-    },
-    onError: (err: any) => {
-      const message = err.response?.data?.message || err.response?.data?.title || err.message || 'Неизвестная ошибка';
-      setError(message);
-    },
-  });
+  //       setSuccess('Транзакция успешно завершена');
+  //       return result;
+  //     } catch (err: any) {
+  //       try {
+  //         await pumpApi.unlockPump({
+  //           pumpLockTag: lockTag,
+  //           pumpNumber: params.pumpNumber,
+  //         });
+  //       } catch (unlockErr) {
+  //         console.error('Failed to unlock after error:', unlockErr);
+  //       }
+  //       throw err;
+  //     }
+  //   },
+  //   onSuccess: () => {
+  //     queryClient.invalidateQueries({ queryKey: ['equipmentState'] });
+  //   },
+  //   onError: (err: any) => {
+  //     const message = err.response?.data?.message || err.response?.data?.title || err.message || 'Неизвестная ошибка';
+  //     setError(message);
+  //   },
+  // });
 
   return {
     startFueling: startFuelingMutation.mutate,

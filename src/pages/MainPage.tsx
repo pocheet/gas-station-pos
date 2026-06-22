@@ -6,13 +6,16 @@ import { usePumpControl } from '../hooks/usePumpControl';
 import PumpSidebar from '../components/PumpSidebar';
 import PumpControl from '../components/PumpControl';
 import PresetKeyboard from '../components/PresetKeyboard';
+import PaymentMethodSelector from '../components/PaymentMethodSelector';
 import TopNavbar from '../components/TopNavbar';
+import { PAYMENT_METHODS } from '../types/schemas';
 
 export default function MainPage() {
   const [selectedPump, setSelectedPump] = useState<number | null>(null);
   const [selectedNozzle, setSelectedNozzle] = useState<number | null>(null);
   const [presetMode, setPresetMode] = useState<'volume' | 'amount'>('volume');
   const [presetValue, setPresetValue] = useState('0');
+  const [payFormCode, setPayFormCode] = useState<number>(PAYMENT_METHODS.TECHNOLOGICAL);
   
   const { data: config } = useConfiguration();
   const { data: state } = useEquipmentState();
@@ -43,6 +46,7 @@ export default function MainPage() {
       pricePerUnit,
       value,
       isValueAmount,
+      payFormCode, // Передаем способ оплаты
     });
   };
 
@@ -73,8 +77,16 @@ export default function MainPage() {
           />
         </main>
 
-        {/* Правая панель - клавиатура (всегда видна) */}
+        {/* Правая панель - клавиатура и способ оплаты */}
         <aside className="w-[350px] bg-[#1a1a2e] overflow-y-auto border-l border-gray-700 p-4">
+          {/* Выбор способа оплаты */}
+          <PaymentMethodSelector
+            value={payFormCode}
+            onChange={setPayFormCode}
+            disabled={!pump || pump.Status !== 1} // Блокируем если не в статусе OFF
+          />
+          
+          {/* Клавиатура */}
           <PresetKeyboard
             mode={presetMode}
             value={presetValue}
