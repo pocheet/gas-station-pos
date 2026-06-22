@@ -78,14 +78,14 @@ export type EquipmentState = z.infer<typeof EquipmentStateSchema>;
 // Статусы как константы
 export const PUMP_STATUS = {
   ERROR: 0,
-  OFF: 1,
-  PRESET: 2, // усановлена доза
+  OFF: 1, // Свободен
+  PRESET: 2, // установлена доза
   CALL: 3, // 
   CALL_ERROR: 4,
-  BUSY: 5,
+  BUSY: 5, // идет отпуск
   BUSY_OVERFLOW: 6,
   WAIT_OFF_OVERFLOW: 7,
-  WAIT_OFF_REMAINDER: 8, // done
+  WAIT_OFF_REMAINDER: 8, // Остаток
   WAIT_OFF: 9,
   WAIT_RESET: 10, // Ожидает обработки
 } as const;

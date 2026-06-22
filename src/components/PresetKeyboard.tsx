@@ -1,5 +1,6 @@
 // src/components/PresetKeyboard.tsx
 import { CircularProgress } from '@mui/material';
+import { PUMP_STATUS } from '../types/schemas';
 
 interface PresetKeyboardProps {
   mode: 'volume' | 'amount';
@@ -11,6 +12,7 @@ interface PresetKeyboardProps {
   isStarting?: boolean;
   canStart?: boolean;
   pricePerUnit?: number;
+  pumpStatus?: number;
 }
 
 export default function PresetKeyboard({
@@ -23,30 +25,35 @@ export default function PresetKeyboard({
   isStarting = false,
   canStart = false,
   pricePerUnit = 0,
+  pumpStatus,
 }: PresetKeyboardProps) {
   const quickVolumes = [10, 15, 20, 30, 40];
   const quickAmounts = [100, 500, 1000, 2000, 5000];
   const quickValues = mode === 'volume' ? quickVolumes : quickAmounts;
 
+  const isPumpReady = pumpStatus === PUMP_STATUS.OFF;
+
   const handleKeyPress = (key: string) => {
+    if (!isPumpReady) return;
     if (value === '0' && key !== '.') {
       onValueChange(key);
     } else if (key === '.' && value.includes('.')) {
-      return; // Не даем ввести вторую точку
+      return;
     } else {
       onValueChange(value + key);
     }
   };
 
   const handleBackspace = () => {
+    if (!isPumpReady) return;
     onValueChange(value.slice(0, -1) || '0');
   };
 
   const handleClear = () => {
+    if (!isPumpReady) return;
     onValueChange('0');
   };
 
-  // Расчет предполагаемой суммы/объема
   const calculatedValue = pricePerUnit > 0 && value !== '0'
     ? mode === 'volume'
       ? (parseFloat(value) * pricePerUnit).toFixed(2)
@@ -54,43 +61,53 @@ export default function PresetKeyboard({
     : null;
 
   return (
-    <div className="bg-[#1a1a2e] rounded-lg p-4 mb-4">
+    <div className="bg-[#1a1a2e] rounded-lg">
+      {/* <h3 className="text-sm text-gray-400 uppercase tracking-wider mb-3 font-semibold">
+        Управление наливом
+      </h3> */}
+
       {/* Display */}
       <div className="bg-[#0a0a14] rounded-lg p-4 mb-4">
         <div className="text-center">
-          <span className="text-4xl font-mono text-[#00d4aa] font-bold">
+          <span className={`text-4xl font-mono font-bold transition-colors ${
+            isPumpReady ? 'text-[#00d4aa]' : 'text-gray-600'
+          }`}>
             {value}
           </span>
           <span className="text-xl text-gray-400 ml-2">
             {mode === 'volume' ? 'л' : '₽'}
           </span>
         </div>
-        {calculatedValue && (
+        {/* {calculatedValue && isPumpReady && (
           <div className="text-center mt-2 text-sm text-gray-400">
             ≈ {calculatedValue} {mode === 'volume' ? '₽' : 'л'}
           </div>
-        )}
+        )} */}
       </div>
 
       {/* Mode tabs */}
       <div className="flex gap-2 mb-4">
         <button
-          onClick={() => onModeChange('volume')}
+          onClick={() => isPumpReady && onModeChange('volume')}
+          disabled={!isPumpReady}
           className={`flex-1 py-2 rounded-lg font-medium transition-colors
             ${mode === 'volume' 
               ? 'bg-[#00d4aa] text-black' 
               : 'bg-[#16213e] text-gray-300 hover:bg-[#0f3460]'
-            }`}
+            }
+            disabled:opacity-50 disabled:cursor-not-allowed`}
         >
           Объем
         </button>
         <button
-          onClick={() => onModeChange('amount')}
+          onClick={() => isPumpReady && onModeChange('amount')}
+          disabled={!isPumpReady}
           className={`flex-1 py-2 rounded-lg font-medium transition-colors
             ${mode === 'amount' 
               ? 'bg-[#00d4aa] text-black' 
               : 'bg-[#16213e] text-gray-300 hover:bg-[#0f3460]'
-            }`}
+            }
+            disabled:opacity-50 disabled:cursor-not-allowed`}
         >
           Сумма
         </button>
@@ -102,7 +119,7 @@ export default function PresetKeyboard({
           <button
             key={num}
             onClick={() => handleKeyPress(num)}
-            disabled={isStarting}
+            disabled={isStarting || !isPumpReady}
             className="py-3 bg-[#0f3460] text-white rounded-lg text-xl font-semibold
                      hover:bg-[#0f3460]/80 active:bg-[#0f3460]/60 
                      disabled:opacity-50 disabled:cursor-not-allowed
@@ -113,7 +130,7 @@ export default function PresetKeyboard({
         ))}
         <button
           onClick={handleBackspace}
-          disabled={isStarting}
+          disabled={isStarting || !isPumpReady}
           className="py-3 bg-[#ffa502] text-white rounded-lg text-xl font-semibold
                    hover:bg-[#ffa502]/80 disabled:opacity-50 disabled:cursor-not-allowed
                    transition-colors"
@@ -122,7 +139,7 @@ export default function PresetKeyboard({
         </button>
         <button
           onClick={() => handleKeyPress('0')}
-          disabled={isStarting}
+          disabled={isStarting || !isPumpReady}
           className="py-3 bg-[#0f3460] text-white rounded-lg text-xl font-semibold
                    hover:bg-[#0f3460]/80 disabled:opacity-50 disabled:cursor-not-allowed
                    transition-colors"
@@ -131,7 +148,7 @@ export default function PresetKeyboard({
         </button>
         <button
           onClick={() => handleKeyPress('.')}
-          disabled={isStarting}
+          disabled={isStarting || !isPumpReady}
           className="py-3 bg-[#0f3460] text-white rounded-lg text-xl font-semibold
                    hover:bg-[#0f3460]/80 disabled:opacity-50 disabled:cursor-not-allowed
                    transition-colors"
@@ -144,7 +161,7 @@ export default function PresetKeyboard({
       <div className="grid grid-cols-2 gap-2 mb-4">
         <button
           onClick={handleClear}
-          disabled={isStarting}
+          disabled={isStarting || !isPumpReady}
           className="py-3 bg-[#ff4757] text-white rounded-lg text-lg font-semibold
                    hover:bg-[#ff4757]/80 disabled:opacity-50 disabled:cursor-not-allowed
                    transition-colors"
@@ -153,7 +170,7 @@ export default function PresetKeyboard({
         </button>
         <button
           onClick={onStart}
-          disabled={!canStart || isStarting}
+          disabled={!canStart || isStarting || !isPumpReady}
           className="py-3 bg-[#00d4aa] text-black rounded-lg text-lg font-semibold
                    hover:bg-[#00d4aa]/80 disabled:opacity-50 disabled:cursor-not-allowed
                    transition-colors flex items-center justify-center gap-2"
@@ -174,8 +191,8 @@ export default function PresetKeyboard({
         {quickValues.map(qv => (
           <button
             key={qv}
-            onClick={() => onValueChange(qv.toString())}
-            disabled={isStarting}
+            onClick={() => isPumpReady && onValueChange(qv.toString())}
+            disabled={isStarting || !isPumpReady}
             className="py-2 border border-gray-600 text-gray-300 rounded-lg
                      hover:bg-[#16213e] hover:border-[#00d4aa] hover:text-white
                      disabled:opacity-50 disabled:cursor-not-allowed
@@ -184,6 +201,19 @@ export default function PresetKeyboard({
             {mode === 'volume' ? `${qv} л.` : `+${qv} руб.`}
           </button>
         ))}
+      </div>
+
+      {/* Статус */}
+      <div className="mt-4 text-center text-xs">
+        {!selectedNozzle && isPumpReady ? (
+          <span className="text-[#ffa502]">Выберите топливо</span>
+        ) : value === '0' && isPumpReady ? (
+          <span className="text-[#ffa502]">Укажите объем/сумму</span>
+        ) : canStart ? (
+          <span className="text-[#00d4aa]">Готов к запуску</span>
+        ) : !isPumpReady ? (
+          <span className="text-gray-500">Клавиатура заблокирована</span>
+        ) : null}
       </div>
     </div>
   );

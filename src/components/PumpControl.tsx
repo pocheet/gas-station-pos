@@ -1,9 +1,7 @@
 // src/components/PumpControl.tsx
-import { useState } from 'react';
 import { type Configuration, type EquipmentState, PUMP_STATUS } from '../types/schemas';
 import { usePumpControl } from '../hooks/usePumpControl';
 import NozzleSelector from './NozzleSelector';
-import PresetKeyboard from './PresetKeyboard';
 import TransactionInfo from './TransactionInfo';
 import { Alert, Snackbar } from '@mui/material';
 
@@ -11,16 +9,18 @@ interface PumpControlProps {
   pumpNumber: number | null;
   config?: Configuration;
   state?: EquipmentState;
+  selectedNozzle: number | null;
+  onSelectNozzle: (num: number) => void;
 }
 
-export default function PumpControl({ pumpNumber, config, state }: PumpControlProps) {
-  const [selectedNozzle, setSelectedNozzle] = useState<number | null>(null);
-  const [presetMode, setPresetMode] = useState<'volume' | 'amount'>('volume');
-  const [presetValue, setPresetValue] = useState('0');
-  
+export default function PumpControl({ 
+  pumpNumber, 
+  config, 
+  state, 
+  selectedNozzle, 
+  onSelectNozzle 
+}: PumpControlProps) {
   const { 
-    startFueling, 
-    isStarting, 
     stopTransaction,
     isStopping,
     continueTransaction,
@@ -54,28 +54,6 @@ export default function PumpControl({ pumpNumber, config, state }: PumpControlPr
   const hasActiveTransaction = pump?.Transaction && 
     pump.Transaction.TransactionId !== '00000000-0000-0000-0000-000000000000';
 
-  const getSelectedNozzlePrice = (): number => {
-    if (!selectedNozzle || !pump) return 0;
-    const nozzle = pump.Nozzles.find(n => n.Number === selectedNozzle);
-    return nozzle?.DefaultPricePerUnit ?? 0;
-  };
-
-  const handleStartFueling = () => {
-    if (!selectedNozzle || !pumpNumber || presetValue === '0') return;
-
-    const pricePerUnit = getSelectedNozzlePrice();
-    const value = parseFloat(presetValue);
-    const isValueAmount = presetMode === 'amount';
-
-    startFueling({
-      pumpNumber,
-      nozzleNumber: selectedNozzle,
-      pricePerUnit,
-      value,
-      isValueAmount,
-    });
-  };
-
   const handleStopTransaction = () => {
     if (!pumpNumber) return;
     stopTransaction({ pumpNumber });
@@ -103,7 +81,7 @@ export default function PumpControl({ pumpNumber, config, state }: PumpControlPr
       case PUMP_STATUS.BUSY: return 'Идет отпуск';
       case PUMP_STATUS.BUSY_OVERFLOW: return 'Перелив';
       case PUMP_STATUS.WAIT_RESET: return 'Ожидает сброса';
-      case PUMP_STATUS.WAIT_OFF_REMAINDER: return 'Остаток ( )';
+      case PUMP_STATUS.WAIT_OFF_REMAINDER: return 'Остаток';
       case PUMP_STATUS.PRESET: return 'Установлена доза';
       case PUMP_STATUS.WAIT_OFF: return 'Повесьте пистолет';
       default: return 'Обработка';
@@ -122,29 +100,15 @@ export default function PumpControl({ pumpNumber, config, state }: PumpControlPr
         </span>
       </div>
 
-      {/* Если ТРК готова - показываем выбор пистолета и клавиатуру */}
+      {/* Если ТРК готова - показываем выбор пистолета */}
       {isPumpReady && (
-        <>
-          <NozzleSelector
-            nozzles={pumpConfig?.Nozzles || []}
-            products={config?.Products || []}
-            pumpState={pump}
-            selectedNozzle={selectedNozzle}
-            onSelectNozzle={setSelectedNozzle}
-          />
-          
-          <PresetKeyboard
-            mode={presetMode}
-            value={presetValue}
-            onModeChange={setPresetMode}
-            onValueChange={setPresetValue}
-            selectedNozzle={selectedNozzle}
-            onStart={handleStartFueling}
-            isStarting={isStarting}
-            canStart={!!selectedNozzle && presetValue !== '0' && !isStarting}
-            pricePerUnit={getSelectedNozzlePrice()}
-          />
-        </>
+        <NozzleSelector
+          nozzles={pumpConfig?.Nozzles || []}
+          products={config?.Products || []}
+          pumpState={pump}
+          selectedNozzle={selectedNozzle}
+          onSelectNozzle={onSelectNozzle}
+        />
       )}
 
       {/* Если идет налив или требует сброса - показываем информацию и кнопки управления */}
