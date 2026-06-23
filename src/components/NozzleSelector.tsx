@@ -10,8 +10,7 @@ interface NozzleSelectorProps {
 }
 
 export default function NozzleSelector({ 
-  nozzles, 
-  products, 
+  nozzles,
   pumpState,
   selectedNozzle, 
   onSelectNozzle 
@@ -25,7 +24,6 @@ export default function NozzleSelector({
     <div className="mb-6">
       <div className="grid grid-cols-2 gap-2">
         {nozzles.map(nozzle => {
-          const product = products.find(p => p.Name === nozzle.ProductRef);
           const price = getProductPrice(nozzle.ProductRef);
           const isSelected = selectedNozzle === nozzle.LogicalNumber;
 
