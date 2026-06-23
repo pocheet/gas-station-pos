@@ -1,42 +1,63 @@
 // src/components/PaymentMethodSelector.tsx
-import { PAYMENT_METHODS, PAYMENT_METHOD_LABELS } from '../types/schemas';
+import { PAYMENT_METHODS } from '../types/schemas';
 
 interface PaymentMethodSelectorProps {
   value: number;
   onChange: (method: number) => void;
   disabled?: boolean;
+  onDiscountClick?: () => void;
 }
 
-const methods = [
+const paymentMethods = [
   {
     id: PAYMENT_METHODS.TECHNOLOGICAL,
-    label: PAYMENT_METHOD_LABELS[PAYMENT_METHODS.TECHNOLOGICAL],
-    icon: '⚙️',
-    color: '#00d4aa',
+    label: 'Технологический',
+    shortLabel: 'Техн.',
+    icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+        <line x1="8" y1="21" x2="16" y2="21"/>
+        <line x1="12" y1="17" x2="12" y2="21"/>
+      </svg>
+    ),
   },
   {
     id: PAYMENT_METHODS.CASH,
-    label: PAYMENT_METHOD_LABELS[PAYMENT_METHODS.CASH],
-    icon: '💵',
-    color: '#ffd700',
+    label: 'Наличные',
+    shortLabel: 'Нал.',
+    icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="12" y1="1" x2="12" y2="23"/>
+        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+      </svg>
+    ),
   },
   {
     id: PAYMENT_METHODS.CASHLESS,
-    label: PAYMENT_METHOD_LABELS[PAYMENT_METHODS.CASHLESS],
-    icon: '💳',
-    color: '#60a5fa',
+    label: 'Безналичный',
+    shortLabel: 'Безнал.',
+    icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+        <line x1="1" y1="10" x2="23" y2="10"/>
+      </svg>
+    ),
   },
 ];
 
 export default function PaymentMethodSelector({ 
   value, 
   onChange, 
-  disabled = false 
+  disabled = false,
+  onDiscountClick,
 }: PaymentMethodSelectorProps) {
   return (
     <div className="mb-2">
-      <div className="space-y-2">
-        {methods.map((method) => {
+      
+      {/* Сетка 2x3 */}
+      <div className="grid grid-cols-2 gap-2">
+        {/* Три кнопки способов оплаты */}
+        {paymentMethods.map((method) => {
           const isSelected = value === method.id;
           
           return (
@@ -45,37 +66,61 @@ export default function PaymentMethodSelector({
               onClick={() => !disabled && onChange(method.id)}
               disabled={disabled}
               className={`
-                w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200
+                relative flex flex-col justify-between h-[80px] p-3 rounded-lg 
+                transition-all duration-200 text-left
                 ${isSelected 
-                  ? 'bg-opacity-20 border-2' 
-                  : 'bg-[#0f3460]/20 border-2 border-transparent hover:bg-[#16213e]'
+                  ? 'bg-[#16213e] border-2 border-[#00d4aa]' 
+                  : 'bg-[#0f3460]/20 border-2 border-transparent hover:bg-[#16213e] hover:border-gray-600'
                 }
                 ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
               `}
-              style={isSelected ? {
-                backgroundColor: `${method.color}15`,
-                borderColor: method.color,
-              } : {}}
             >
-              <span className="text-xl">{method.icon}</span>
+              {/* Иконка справа вверху */}
+              <div className={`self-end transition-colors ${
+                isSelected ? 'text-[#00d4aa]' : 'text-gray-500'
+              }`}>
+                {method.icon}
+              </div>
               
-              <div className="flex-1 text-left">
-                <div className={`font-semibold text-sm transition-colors ${
-                  isSelected ? 'text-white' : 'text-gray-300'
+              {/* Текст слева внизу */}
+              <div>
+                <div className={`text-xs font-medium transition-colors ${
+                  isSelected ? 'text-[#00d4aa]' : 'text-gray-400'
                 }`}>
                   {method.label}
                 </div>
               </div>
-              
-              {isSelected && (
-                <div 
-                  className="w-3 h-3 rounded-full flex-shrink-0"
-                  style={{ backgroundColor: method.color }}
-                />
-              )}
             </button>
           );
         })}
+
+        {/* Кнопка Скидка */}
+        <button
+          onClick={onDiscountClick}
+          disabled={disabled}
+          className="relative flex flex-col justify-between h-[80px] p-3 rounded-lg 
+                   transition-all duration-200 text-left
+                   bg-[#0f3460]/20 border-2 border-transparent 
+                   hover:bg-[#16213e] hover:border-[#ffa502]
+                   disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+        >
+          <div className="self-end text-[#ffa502]">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M16 8l-8 8"/>
+              <path d="M8.5 8.5h.01"/>
+              <path d="M15.5 15.5h.01"/>
+            </svg>
+          </div>
+          <div>
+            <div className="text-xs font-medium text-gray-400">
+              Скидка
+            </div>
+            <div className="text-[10px] mt-0.5 text-gray-600">
+              0 %
+            </div>
+          </div>
+        </button>
       </div>
     </div>
   );
