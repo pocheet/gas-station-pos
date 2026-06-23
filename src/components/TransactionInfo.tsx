@@ -24,7 +24,6 @@ export default function TransactionInfo({
   isStopping,
   isContinuing,
   canReset,
-  canContinue,
 }: TransactionInfoProps) {
   const transaction = pump.Transaction;
   const hasTransaction = transaction.TransactionId !== '00000000-0000-0000-0000-000000000000';
