@@ -32,6 +32,7 @@ export default function PresetKeyboard({
   const quickValues = mode === 'volume' ? quickVolumes : quickAmounts;
 
   const isPumpReady = pumpStatus === PUMP_STATUS.OFF;
+  const displayColor = mode === 'volume' ? '#00d4aa' : '#ffd700';
 
   const handleKeyPress = (key: string) => {
     if (!isPumpReady) return;
@@ -54,6 +55,23 @@ export default function PresetKeyboard({
     onValueChange('0');
   };
 
+  const handleQuickValue = (qv: number) => {
+    if (!isPumpReady) return;
+    
+    if (mode === 'volume') {
+      onValueChange(qv.toString());
+    } else {
+      const current = parseFloat(value) || 0;
+      const newValue = current + qv;
+      onValueChange(newValue.toString());
+    }
+  };
+
+  const handleModeChange = (newMode: 'volume' | 'amount') => {
+    if (!isPumpReady) return;
+    onModeChange(newMode);
+  };
+
   const calculatedValue = pricePerUnit > 0 && value !== '0'
     ? mode === 'volume'
       ? (parseFloat(value) * pricePerUnit).toFixed(2)
@@ -62,33 +80,34 @@ export default function PresetKeyboard({
 
   return (
     <div className="bg-[#1a1a2e] rounded-lg">
-      {/* <h3 className="text-sm text-gray-400 uppercase tracking-wider mb-3 font-semibold">
-        Управление наливом
-      </h3> */}
-
-      {/* Display */}
-      <div className="bg-[#0a0a14] rounded-lg p-4 mb-4">
+      {/* Display - фиксированная высота */}
+      <div className="bg-[#0a0a14] rounded-lg p-4 mb-4 min-h-[100px] flex flex-col justify-center">
         <div className="text-center">
-          <span className={`text-4xl font-mono font-bold transition-colors ${
-            isPumpReady ? 'text-[#00d4aa]' : 'text-gray-600'
-          }`}>
+          <span 
+            className="text-4xl font-mono font-bold transition-colors duration-300"
+            style={{ color: isPumpReady ? displayColor : '#4b5563' }}
+          >
             {value}
           </span>
           <span className="text-xl text-gray-400 ml-2">
             {mode === 'volume' ? 'л' : '₽'}
           </span>
         </div>
-        {/* {calculatedValue && isPumpReady && (
-          <div className="text-center mt-2 text-sm text-gray-400">
-            ≈ {calculatedValue} {mode === 'volume' ? '₽' : 'л'}
-          </div>
-        )} */}
+        <div className="text-center mt-2 h-5">
+          {calculatedValue && isPumpReady ? (
+            <span className="text-sm text-gray-400">
+              ≈ {calculatedValue} {mode === 'volume' ? '₽' : 'л'}
+            </span>
+          ) : (
+            <span className="text-sm text-gray-600">—</span>
+          )}
+        </div>
       </div>
 
       {/* Mode tabs */}
       <div className="flex gap-2 mb-4">
         <button
-          onClick={() => isPumpReady && onModeChange('volume')}
+          onClick={() => handleModeChange('volume')}
           disabled={!isPumpReady}
           className={`flex-1 py-2 rounded-lg font-medium transition-colors
             ${mode === 'volume' 
@@ -100,11 +119,11 @@ export default function PresetKeyboard({
           Объем
         </button>
         <button
-          onClick={() => isPumpReady && onModeChange('amount')}
+          onClick={() => handleModeChange('amount')}
           disabled={!isPumpReady}
           className={`flex-1 py-2 rounded-lg font-medium transition-colors
             ${mode === 'amount' 
-              ? 'bg-[#00d4aa] text-black' 
+              ? 'bg-[#ffd700] text-black' 
               : 'bg-[#16213e] text-gray-300 hover:bg-[#0f3460]'
             }
             disabled:opacity-50 disabled:cursor-not-allowed`}
@@ -191,7 +210,7 @@ export default function PresetKeyboard({
         {quickValues.map(qv => (
           <button
             key={qv}
-            onClick={() => isPumpReady && onValueChange(qv.toString())}
+            onClick={() => handleQuickValue(qv)}
             disabled={isStarting || !isPumpReady}
             className="py-2 border border-gray-600 text-gray-300 rounded-lg
                      hover:bg-[#16213e] hover:border-[#00d4aa] hover:text-white
@@ -208,7 +227,7 @@ export default function PresetKeyboard({
         {!selectedNozzle && isPumpReady ? (
           <span className="text-[#ffa502]">Выберите топливо</span>
         ) : value === '0' && isPumpReady ? (
-          <span className="text-[#ffa502]">Укажите объем/сумму</span>
+          <span className="text-[#ffa502]">Укажите {mode === 'volume' ? 'объем' : 'сумму'}</span>
         ) : canStart ? (
           <span className="text-[#00d4aa]">Готов к запуску</span>
         ) : !isPumpReady ? (
