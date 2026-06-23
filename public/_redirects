@@ -1,0 +1,3 @@
+# public/_redirects
+/api/*  http://rpi.directvision.ru:4001/api/:splat  200
+/*      /index.html                                  200
