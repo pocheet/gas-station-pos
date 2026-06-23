@@ -15,6 +15,18 @@ export const PumpStatusSchema = z.union([
   z.literal(10), // WaitReset
 ]);
 
+export type NozzleConfig = {
+  LogicalNumber: number;
+  PhysicalNumber: number;
+  ProductRef: string;
+};
+
+export type Product = {
+  Id: string;
+  Name: string;
+  DefaultPricePerUnit: number;
+};
+
 export const NozzleConfigSchema = z.object({
   LogicalNumber: z.number(),
   PhysicalNumber: z.number(),
