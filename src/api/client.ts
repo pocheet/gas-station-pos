@@ -1,17 +1,9 @@
 // src/api/client.ts
 import axios from 'axios';
-
-// В режиме разработки запросы идут через Vite proxy
-// В продакшене напрямую
-const getBaseURL = () => {
-  if (import.meta.env.DEV) {
-    return ''; // Пустая строка, так как используем относительные пути через прокси
-  }
-  return 'http://rpi.directvision.ru:4001';
-};
+import { ConfigurationSchema, EquipmentStateSchema } from '../types/schemas';
 
 const apiClient = axios.create({
-  baseURL: getBaseURL(),
+  baseURL: import.meta.env.DEV ? '' : 'http://rpi.directvision.ru:4001',
   headers: {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
@@ -19,33 +11,106 @@ const apiClient = axios.create({
   timeout: 10000,
 });
 
-// Логирование запросов
-apiClient.interceptors.request.use(
-  (config) => {
-    const fullUrl = `${config.baseURL}${config.url}`;
-    console.log(`🚀 Request: ${config.method?.toUpperCase()} ${fullUrl}`);
-    return config;
+export const configApi = {
+  getConfiguration: async () => {
+    const { data } = await apiClient.get('/api/v1/GetConfiguration');
+    return ConfigurationSchema.parse(data);
   },
-  (error) => {
-    console.error('❌ Request Error:', error);
-    return Promise.reject(error);
-  }
-);
+};
 
-apiClient.interceptors.response.use(
-  (response) => {
-    console.log(`✅ Response: ${response.status} from ${response.config.url}`);
-    return response;
+export const stateApi = {
+  getEquipmentState: async () => {
+    const { data } = await apiClient.get('/api/v1/GetFuelEquipmentValues');
+    return EquipmentStateSchema.parse(data);
   },
-  (error) => {
-    console.error('❌ Response Error:', {
-      url: error.config?.url,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data,
-    });
-    return Promise.reject(error);
-  }
-);
+};
 
-export { apiClient };
+export interface LockPumpRequest {
+  pumpLockTag: string;
+  pumpNumber: number;
+}
+
+export interface StartTransactionRequest {
+  Tags?: Record<string, any>;
+  externalId?: string;
+  isValueAmount: boolean;
+  nozzleNumber: number;
+  payFormCode: number;
+  pricePerUnit: number;
+  pumpLockTag: string;
+  pumpNumber: number;
+  shiftId?: string;
+  tankNumber?: number;
+  unlockOnSuccess: boolean;
+  value: number;
+}
+
+export interface ResetTransactionRequest {
+  Tags?: Record<string, any>;
+  amount?: number;
+  emergencyAmount?: number;
+  emergencyReset?: boolean;
+  emergencyVolume?: number;
+  externalId?: string;
+  payFormCode?: number; // ← убедитесь что есть
+  pricePerUnit?: number;
+  pumpLockTag: string;
+  pumpNumber: number;
+  shiftId?: string;
+  tankNumber?: number;
+  unlockOnSuccess: boolean;
+}
+
+export interface StopTransactionRequest {
+  pumpLockTag: string;
+  pumpNumber: number;
+}
+
+export interface ContinueTransactionRequest {
+  pumpLockTag: string;
+  pumpNumber: number;
+  unlockOnSuccess: boolean;
+}
+
+export interface UnlockPumpRequest {
+  pumpLockTag: string;
+  pumpNumber: number;
+}
+
+export const pumpApi = {
+  // Блокировка ТРК
+  lockPump: async (request: LockPumpRequest) => {
+    const { data } = await apiClient.post('/api/v1/LockPump', request);
+    return data;
+  },
+
+  // Запуск транзакции
+  startTransaction: async (request: StartTransactionRequest) => {
+    const { data } = await apiClient.post('/api/v1/StartPumpTransaction', request);
+    return data;
+  },
+
+  // Сброс транзакции
+  resetTransaction: async (request: ResetTransactionRequest) => {
+    const { data } = await apiClient.post('/api/v1/ResetPumpTransaction', request);
+    return data;
+  },
+
+  // Остановка транзакции
+  stopTransaction: async (request: StopTransactionRequest) => {
+    const { data } = await apiClient.post('/api/v1/StopPumpTransaction', request);
+    return data;
+  },
+
+  // Продолжение транзакции
+  continueTransaction: async (request: ContinueTransactionRequest) => {
+    const { data } = await apiClient.post('/api/v1/ContinuePumpTransaction', request);
+    return data;
+  },
+  
+  // Разблокировка ТРК
+  unlockPump: async (request: UnlockPumpRequest) => {
+    const { data } = await apiClient.post('/api/v1/UnlockPump', request);
+    return data;
+  },
+};
