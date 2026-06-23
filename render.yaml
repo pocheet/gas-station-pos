@@ -2,10 +2,9 @@
 services:
   - type: web
     name: gas-station-pos
-    env: static
+    env: node
     buildCommand: npm install && npm run build
-    staticPublishPath: ./dist
-    routes:
-      - type: rewrite
-        source: /api/*
-        destination: http://rpi.directvision.ru:4001/api/*
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 18

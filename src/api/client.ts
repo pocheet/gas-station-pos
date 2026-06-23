@@ -3,7 +3,8 @@ import axios from 'axios';
 import { ConfigurationSchema, EquipmentStateSchema } from '../types/schemas';
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.DEV ? '' : 'http://rpi.directvision.ru:4001',
+  // baseURL: import.meta.env.DEV ? '' : 'http://rpi.directvision.ru:4001',
+  baseURL: '/api',
   headers: {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
@@ -13,14 +14,14 @@ const apiClient = axios.create({
 
 export const configApi = {
   getConfiguration: async () => {
-    const { data } = await apiClient.get('/api/v1/GetConfiguration');
+    const { data } = await apiClient.get('/v1/GetConfiguration');
     return ConfigurationSchema.parse(data);
   },
 };
 
 export const stateApi = {
   getEquipmentState: async () => {
-    const { data } = await apiClient.get('/api/v1/GetFuelEquipmentValues');
+    const { data } = await apiClient.get('/v1/GetFuelEquipmentValues');
     return EquipmentStateSchema.parse(data);
   },
 };
@@ -80,37 +81,37 @@ export interface UnlockPumpRequest {
 export const pumpApi = {
   // Блокировка ТРК
   lockPump: async (request: LockPumpRequest) => {
-    const { data } = await apiClient.post('/api/v1/LockPump', request);
+    const { data } = await apiClient.post('/v1/LockPump', request);
     return data;
   },
 
   // Запуск транзакции
   startTransaction: async (request: StartTransactionRequest) => {
-    const { data } = await apiClient.post('/api/v1/StartPumpTransaction', request);
+    const { data } = await apiClient.post('/v1/StartPumpTransaction', request);
     return data;
   },
 
   // Сброс транзакции
   resetTransaction: async (request: ResetTransactionRequest) => {
-    const { data } = await apiClient.post('/api/v1/ResetPumpTransaction', request);
+    const { data } = await apiClient.post('/v1/ResetPumpTransaction', request);
     return data;
   },
 
   // Остановка транзакции
   stopTransaction: async (request: StopTransactionRequest) => {
-    const { data } = await apiClient.post('/api/v1/StopPumpTransaction', request);
+    const { data } = await apiClient.post('/v1/StopPumpTransaction', request);
     return data;
   },
 
   // Продолжение транзакции
   continueTransaction: async (request: ContinueTransactionRequest) => {
-    const { data } = await apiClient.post('/api/v1/ContinuePumpTransaction', request);
+    const { data } = await apiClient.post('/v1/ContinuePumpTransaction', request);
     return data;
   },
   
   // Разблокировка ТРК
   unlockPump: async (request: UnlockPumpRequest) => {
-    const { data } = await apiClient.post('/api/v1/UnlockPump', request);
+    const { data } = await apiClient.post('/v1/UnlockPump', request);
     return data;
   },
 };
