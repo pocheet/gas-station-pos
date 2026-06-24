@@ -57,25 +57,45 @@ export default function PaymentMethodSelector({
   discountPercent,
   onDiscountSelect,
 }: PaymentMethodSelectorProps) {
+  const [showPayment, setShowPayment] = useState(false);
   const [showDiscount, setShowDiscount] = useState(false);
-  const popupRef = useRef<HTMLDivElement>(null);
+  const paymentRef = useRef<HTMLDivElement>(null);
+  const discountRef = useRef<HTMLDivElement>(null);
 
-  // Закрываем попап при клике вне
+  const selectedMethod = paymentMethods.find(m => m.id === value) || paymentMethods[0];
+
+  // Закрываем попапы при клике вне
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
+      if (paymentRef.current && !paymentRef.current.contains(event.target as Node)) {
+        setShowPayment(false);
+      }
+      if (discountRef.current && !discountRef.current.contains(event.target as Node)) {
         setShowDiscount(false);
       }
     };
 
-    if (showDiscount) {
+    if (showPayment || showDiscount) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showDiscount]);
+  }, [showPayment, showDiscount]);
+
+  const handlePaymentClick = () => {
+    if (!disabled) {
+      setShowDiscount(false);
+      setShowPayment(!showPayment);
+    }
+  };
+
+  const handlePaymentSelect = (methodId: number) => {
+    onChange(methodId);
+    setShowPayment(false);
+  };
 
   const handleDiscountClick = () => {
     if (!disabled) {
+      setShowPayment(false);
       setShowDiscount(!showDiscount);
     }
   };
@@ -88,65 +108,72 @@ export default function PaymentMethodSelector({
   return (
     <div className="mb-2">
       <div className="grid grid-cols-2 gap-2">
-        {/* Три кнопки способов оплаты */}
-        {paymentMethods.map((method) => {
-          const isSelected = value === method.id;
-          
-          return (
-            <button
-              key={method.id}
-              onClick={() => !disabled && onChange(method.id)}
-              disabled={disabled}
-              className={`
-                relative flex flex-col justify-between h-[80px] p-3 rounded-lg 
-                transition-all duration-200 text-left
-                ${isSelected 
-                  ? 'bg-[#16213e] border-2 border-[#00d4aa]' 
-                  : 'bg-[#0f3460]/20 border-2 border-transparent hover:bg-[#16213e] hover:border-gray-600'
-                }
-                ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-              `}
-            >
-              <div className={`self-end transition-colors ${
-                isSelected ? 'text-[#00d4aa]' : 'text-gray-500'
-              }`}>
-                {method.icon}
+        {/* Кнопка Способ оплаты с попапом */}
+        <div className="relative" ref={paymentRef}>
+          <button
+            onClick={handlePaymentClick}
+            disabled={disabled}
+            className={`
+              relative flex flex-col justify-between h-[80px] p-3 rounded-lg 
+              transition-all duration-200 text-left w-full
+              bg-[#0f3460]/20 border-2 border-transparent
+              hover:bg-[#16213e] hover:border-gray-600
+              disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer
+            `}
+          >
+            <div className="self-end text-gray-500">
+              {selectedMethod.icon}
+            </div>
+            <div>
+              <div className="text-xs font-medium text-gray-400">
+                {selectedMethod.label}
               </div>
-              
-              <div>
-                <div className={`text-xs font-medium transition-colors ${
-                  isSelected ? 'text-[#00d4aa]' : 'text-gray-400'
-                }`}>
-                  {method.shortLabel}
-                </div>
-                <div className={`text-[10px] mt-0.5 transition-colors ${
-                  isSelected ? 'text-gray-400' : 'text-gray-600'
-                }`}>
-                  Способ оплаты
-                </div>
+              <div className="text-[10px] mt-0.5 text-gray-600">
+                Способ оплаты
               </div>
-            </button>
-          );
-        })}
+            </div>
+          </button>
+
+          {/* Попап выбора способа оплаты */}
+          {showPayment && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-[#1a1a2e] border border-gray-700 rounded-lg p-2 z-50 shadow-xl">
+              <div className="grid grid-cols-1 gap-1">
+                {paymentMethods.map((method) => (
+                  <button
+                    key={method.id}
+                    onClick={() => handlePaymentSelect(method.id)}
+                    className={`
+                      flex items-center gap-3 py-2 px-3 rounded-lg text-sm font-medium transition-all duration-200
+                      ${value === method.id
+                        ? 'bg-[#00d4aa]/20 border border-[#00d4aa] text-[#00d4aa]'
+                        : 'bg-[#0a0a14] border border-transparent text-gray-300 hover:bg-[#16213e] hover:border-gray-600'
+                      }
+                    `}
+                  >
+                    {/* <span className={value === method.id ? 'text-[#00d4aa]' : 'text-gray-500'}>
+                      {method.icon}
+                    </span> */}
+                    <span>{method.shortLabel}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Кнопка Скидка с попапом */}
-        <div className="relative" ref={popupRef}>
+        <div className="relative" ref={discountRef}>
           <button
             onClick={handleDiscountClick}
             disabled={disabled}
             className={`
               relative flex flex-col justify-between h-[80px] p-3 rounded-lg 
               transition-all duration-200 text-left w-full
-              ${discountPercent !== null
-                ? 'bg-[#0f3460]/20 border-2 border-[#ffa502]' 
-                : 'bg-[#0f3460]/20 border-2 border-transparent hover:bg-[#16213e] hover:border-[#ffa502]'
-              }
+              bg-[#0f3460]/20 border-2 border-transparent hover:bg-[#16213e] hover:border-gray-600
               disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer
             `}
           >
-            <div className={`self-end transition-colors ${
-              discountPercent !== null ? 'text-[#ffa502]' : 'text-gray-500'
-            }`}>
+            <div className={`self-end transition-colors text-gray-500`}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10"/>
                 <path d="M16 8l-8 8"/>
@@ -193,7 +220,7 @@ export default function PaymentMethodSelector({
                   onClick={() => handleDiscountSelect(discountPercent)}
                   className="w-full mt-1 py-1.5 rounded-lg text-xs text-gray-500 hover:text-gray-300 transition-colors"
                 >
-                  Отменить
+                  Отменить скидку
                 </button>
               )}
             </div>
