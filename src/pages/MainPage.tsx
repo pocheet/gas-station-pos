@@ -16,6 +16,7 @@ export default function MainPage() {
   const [presetMode, setPresetMode] = useState<'volume' | 'amount'>('volume');
   const [presetValue, setPresetValue] = useState('0');
   const [payFormCode, setPayFormCode] = useState<number>(PAYMENT_METHODS.TECHNOLOGICAL);
+  const [discountPercent, setDiscountPercent] = useState<number | null>(null);
   
   const { data: config } = useConfiguration();
   const { data: state } = useEquipmentState();
@@ -27,10 +28,22 @@ export default function MainPage() {
 
   const pump = state?.PumpValuesCollection.find(p => p.Number === selectedPump);
   
+  // const getSelectedNozzlePrice = (): number => {
+  //   if (!selectedNozzle || !pump) return 0;
+  //   const nozzle = pump.Nozzles.find(n => n.Number === selectedNozzle);
+  //   return nozzle?.DefaultPricePerUnit ?? 0;
+  // };
+
   const getSelectedNozzlePrice = (): number => {
     if (!selectedNozzle || !pump) return 0;
     const nozzle = pump.Nozzles.find(n => n.Number === selectedNozzle);
-    return nozzle?.DefaultPricePerUnit ?? 0;
+    const basePrice = nozzle?.DefaultPricePerUnit ?? 0;
+    
+    // Применяем скидку к цене
+    if (discountPercent) {
+      return basePrice * (1 - discountPercent / 100);
+    }
+    return basePrice;
   };
 
   const handleStartFueling = () => {
@@ -46,7 +59,7 @@ export default function MainPage() {
       pricePerUnit,
       value,
       isValueAmount,
-      payFormCode, // Передаем способ оплаты
+      payFormCode,
     });
   };
 
@@ -79,14 +92,19 @@ export default function MainPage() {
 
         {/* Правая панель - клавиатура и способ оплаты */}
         <aside className="w-[350px] bg-[#1a1a2e] overflow-y-auto border-l border-gray-700 p-4">
-          {/* Выбор способа оплаты */}
           <PaymentMethodSelector
             value={payFormCode}
             onChange={setPayFormCode}
-            disabled={!pump || pump.Status !== 1} // Блокируем если не в статусе OFF
+            disabled={!pump || pump.Status !== 1}
+            discountPercent={discountPercent}
+            onDiscountClick={() => {
+              // Ничего не делаем — попап управляется внутри
+            }}
+            onDiscountSelect={(percent) => {
+              setDiscountPercent(percent === discountPercent ? null : percent);
+            }}
           />
           
-          {/* Клавиатура */}
           <PresetKeyboard
             mode={presetMode}
             value={presetValue}
