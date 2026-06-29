@@ -36,7 +36,7 @@ export default function TransactionInfo({
     ? (transaction.RealTimeVolume / transaction.PresetVolume) * 100 
     : 0;
 
-  const nozzle = pump.Nozzles.find(n => n.Number === transaction.NozzleNumber);
+  // const nozzle = pump.Nozzles.find(n => n.Number === transaction.NozzleNumber);
   const isProcessing = isResetting || isStopping || isContinuing;
 
   return (
