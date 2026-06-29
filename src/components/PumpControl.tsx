@@ -71,7 +71,6 @@ export default function PumpControl({
       pumpNumber,
       amount: transaction.RealTimeAmount,
       pricePerUnit: transaction.PricePerUnit,
-      payFormCode: transaction.PayFormCode ?? 1, // Берем из транзакции или по умолчанию
     });
   };
 
@@ -101,16 +100,15 @@ export default function PumpControl({
         </span>
       </div>
 
-      {/* Если ТРК готова - показываем выбор пистолета */}
-      {isPumpReady && (
-        <NozzleSelector
-          nozzles={pumpConfig?.Nozzles || []}
-          products={config?.Products || []}
-          pumpState={pump}
-          selectedNozzle={selectedNozzle}
-          onSelectNozzle={onSelectNozzle}
-        />
-      )}
+      {/* NozzleSelector всегда отображается */}
+      <NozzleSelector
+        nozzles={pumpConfig?.Nozzles || []}
+        products={config?.Products || []}
+        pumpState={pump}
+        selectedNozzle={selectedNozzle}
+        onSelectNozzle={onSelectNozzle}
+        disabled={!isPumpReady}
+      />
 
       {/* Если идет налив или требует сброса - показываем информацию и кнопки управления */}
       {(isPumpBusy || canReset || hasActiveTransaction) && (

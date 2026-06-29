@@ -36,7 +36,7 @@ export default function TransactionInfo({
     ? (transaction.RealTimeVolume / transaction.PresetVolume) * 100 
     : 0;
 
-  const nozzle = pump.Nozzles.find(n => n.Number === transaction.NozzleNumber);
+  // const nozzle = pump.Nozzles.find(n => n.Number === transaction.NozzleNumber);
   const isProcessing = isResetting || isStopping || isContinuing;
 
   return (
@@ -127,7 +127,7 @@ export default function TransactionInfo({
             )}
           </div>
 
-          <div className="bg-[#0a0a14] rounded-lg p-3">
+          {/* <div className="bg-[#0a0a14] rounded-lg p-3">
             <div className="text-gray-400 text-xs uppercase mb-1">Цена</div>
             <div className="text-white text-xl font-mono">
               {transaction.PricePerUnit}
@@ -143,7 +143,7 @@ export default function TransactionInfo({
             <div className="text-gray-500 text-xs mt-1">
               Пистолет №{transaction.NozzleNumber}
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Кнопки управления */}
