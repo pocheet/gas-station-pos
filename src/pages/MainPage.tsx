@@ -65,7 +65,7 @@ export default function MainPage() {
 
   return (
     <div className="h-screen flex flex-col bg-[#0a0a14]">
-      <TopNavbar pumps={state?.PumpValuesCollection || []} />
+      <TopNavbar />
       
       <div className="flex flex-1 overflow-hidden">
         {/* Левая панель - список ТРК */}
