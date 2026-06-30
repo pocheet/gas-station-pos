@@ -8,6 +8,7 @@ import PumpControl from '../components/PumpControl';
 import PresetKeyboard from '../components/PresetKeyboard';
 import PaymentMethodSelector from '../components/PaymentMethodSelector';
 import TopNavbar from '../components/TopNavbar';
+import Footer from '../components/Footer';
 import { PAYMENT_METHODS } from '../types/schemas';
 
 export default function MainPage() {
@@ -65,7 +66,7 @@ export default function MainPage() {
 
   return (
     <div className="h-screen flex flex-col bg-[#0a0a14]">
-      <TopNavbar pumps={state?.PumpValuesCollection || []} />
+      <TopNavbar />
       
       <div className="flex flex-1 overflow-hidden">
         {/* Левая панель - список ТРК */}
@@ -119,6 +120,8 @@ export default function MainPage() {
           />
         </aside>
       </div>
+
+      <Footer products={config?.Products} />
     </div>
   );
 }
