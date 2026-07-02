@@ -152,3 +152,27 @@ export const PAYMENT_METHOD_LABELS: Record<number, string> = {
   [PAYMENT_METHODS.CASH]: 'Наличный',
   [PAYMENT_METHODS.CASHLESS]: 'Безналичный',
 };
+
+export type OrderItem = {
+  id: string;
+  pumpNumber: number;
+  nozzleNumber: number;
+  productName: string;
+  volume: number;
+  pricePerUnit: number;
+  discountPercent: number | null;
+  totalAmount: number;
+  timestamp: string;
+};
+
+export const OrderItemSchema = z.object({
+  id: z.string(),
+  pumpNumber: z.number(),
+  nozzleNumber: z.number(),
+  productName: z.string(),
+  volume: z.number(),
+  pricePerUnit: z.number(),
+  discountPercent: z.number().nullable(),
+  totalAmount: z.number(),
+  timestamp: z.string(),
+});
