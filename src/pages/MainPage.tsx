@@ -70,6 +70,15 @@ export default function MainPage() {
       
       <div className="flex flex-1 overflow-hidden">
         {/* Левая панель - список ТРК */}
+        {/* <PumpSidebar
+          pumps={state?.PumpValuesCollection || []}
+          selectedPump={selectedPump}
+          onSelectPump={(num) => {
+            setSelectedPump(num);
+            setSelectedNozzle(null);
+            setPresetValue('0');
+          }}
+        /> */}
         <PumpSidebar
           pumps={state?.PumpValuesCollection || []}
           selectedPump={selectedPump}
