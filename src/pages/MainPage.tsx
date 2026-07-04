@@ -13,10 +13,6 @@ import Footer from '../components/Footer';
 
 import { PAYMENT_METHODS, type OrderItem } from '../types/schemas';
 
-// src/pages/MainPage.tsx
-// import { useState, useEffect } from 'react';
-// ... остальные импорты
-
 export default function MainPage() {
   const [orders, setOrders] = useState<OrderItem[]>([]);
   const [selectedPump, setSelectedPump] = useState<number | null>(null);
@@ -112,6 +108,8 @@ export default function MainPage() {
           pumps={state?.PumpValuesCollection || []}
           selectedPump={selectedPump}
           onSelectPump={handleSelectPump}
+          selectedNozzle={selectedNozzle}
+          onSelectNozzle={setSelectedNozzle}
         />
         
         <main className="flex-1 p-5 overflow-auto">
