@@ -1,7 +1,8 @@
 // src/components/PumpControl.tsx
-import { type Configuration, type EquipmentState, PUMP_STATUS } from '../types/schemas';
+import { type Configuration, type EquipmentState, PUMP_STATUS, type OrderItem } from '../types/schemas';
 import { usePumpControl } from '../hooks/usePumpControl';
 import NozzleSelector from './NozzleSelector';
+import OrderTable from './OrderTable';
 import TransactionInfo from './TransactionInfo';
 import { Alert, Snackbar } from '@mui/material';
 
@@ -11,6 +12,8 @@ interface PumpControlProps {
   state?: EquipmentState;
   selectedNozzle: number | null;
   onSelectNozzle: (num: number) => void;
+  orders: OrderItem[];
+  removeOrder: (id: string) => void;
 }
 
 export default function PumpControl({ 
@@ -18,7 +21,9 @@ export default function PumpControl({
   config, 
   state, 
   selectedNozzle, 
-  onSelectNozzle 
+  onSelectNozzle,
+  orders,
+  removeOrder,
 }: PumpControlProps) {
   const { 
     stopTransaction,
@@ -108,6 +113,12 @@ export default function PumpControl({
         selectedNozzle={selectedNozzle}
         onSelectNozzle={onSelectNozzle}
         disabled={!isPumpReady}
+      />
+
+      {/* Таблица заказов */}
+      <OrderTable
+        orders={orders}
+        onRemoveOrder={removeOrder}
       />
 
       {/* Если идет налив или требует сброса - показываем информацию и кнопки управления */}
