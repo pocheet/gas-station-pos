@@ -27,19 +27,17 @@ export default function PresetKeyboard({
   pricePerUnit = 0,
   pumpStatus,
 }: PresetKeyboardProps) {
-  const quickVolumes = [10, 15, 20, 30, 40];
-  const quickAmounts = [100, 500, 1000, 2000, 5000];
-  const quickValues = mode === 'volume' ? quickVolumes : quickAmounts;
-
   const isPumpReady = pumpStatus === PUMP_STATUS.OFF;
   const displayColor = mode === 'volume' ? '#00d4aa' : '#ffd700';
 
   const handleKeyPress = (key: string) => {
     if (!isPumpReady) return;
-    if (value === '0' && key !== '.') {
+    if (value === '0' && key !== '.' && key !== '00') {
       onValueChange(key);
     } else if (key === '.' && value.includes('.')) {
       return;
+    } else if (key === '00') {
+      onValueChange(value === '0' ? '0' : value + '00');
     } else {
       onValueChange(value + key);
     }
@@ -55,33 +53,23 @@ export default function PresetKeyboard({
     onValueChange('0');
   };
 
-  const handleQuickValue = (qv: number) => {
-    if (!isPumpReady) return;
-    
-    if (mode === 'volume') {
-      onValueChange(qv.toString());
-    } else {
-      const current = parseFloat(value) || 0;
-      const newValue = current + qv;
-      onValueChange(newValue.toString());
-    }
-  };
-
-  const handleModeChange = (newMode: 'volume' | 'amount') => {
-    if (!isPumpReady) return;
-    onModeChange(newMode);
-  };
-
   const calculatedValue = pricePerUnit > 0 && value !== '0'
     ? mode === 'volume'
       ? (parseFloat(value) * pricePerUnit).toFixed(2)
       : (parseFloat(value) / pricePerUnit).toFixed(2)
     : null;
 
+  const btnBase = `
+    aspect-square rounded-2xl font-semibold
+    transition-all duration-200 
+    disabled:opacity-50 disabled:cursor-not-allowed
+    flex items-center justify-center
+  `;
+
   return (
     <div className="bg-[#1a1a2e] rounded-lg">
-      {/* Display - фиксированная высота */}
-      <div className="bg-[#0a0a14] rounded-lg p-4 mb-4 min-h-[100px] flex flex-col justify-center">
+      {/* Display */}
+      <div className="bg-[#0a0a14] rounded-2xl p-4 mb-4 min-h-[100px] flex flex-col justify-center">
         <div className="text-center">
           <span 
             className="text-4xl font-mono font-bold transition-colors duration-300"
@@ -104,122 +92,125 @@ export default function PresetKeyboard({
         </div>
       </div>
 
-      {/* Mode tabs */}
-      <div className="flex gap-2 mb-4">
+      {/* Keyboard */}
+      <div className="grid grid-cols-4 gap-2">
+        {/* Ряд 1: Esc, C, ← (сдвоенная) */}
         <button
-          onClick={() => handleModeChange('volume')}
-          disabled={!isPumpReady}
-          className={`flex-1 py-2 rounded-lg font-medium transition-colors
-            ${mode === 'volume' 
-              ? 'bg-[#00d4aa] text-black' 
-              : 'bg-[#16213e] text-gray-300 hover:bg-[#0f3460]'
-            }
-            disabled:opacity-50 disabled:cursor-not-allowed`}
+          onClick={() => {}}
+          disabled
+          className={`${btnBase} bg-[#16213e] text-gray-600 text-sm cursor-not-allowed`}
         >
-          Объем
+          Esc
         </button>
         <button
-          onClick={() => handleModeChange('amount')}
-          disabled={!isPumpReady}
-          className={`flex-1 py-2 rounded-lg font-medium transition-colors
-            ${mode === 'amount' 
-              ? 'bg-[#ffd700] text-black' 
-              : 'bg-[#16213e] text-gray-300 hover:bg-[#0f3460]'
-            }
-            disabled:opacity-50 disabled:cursor-not-allowed`}
+          onClick={handleClear}
+          disabled={isStarting || !isPumpReady}
+          className={`${btnBase} bg-[#ff4757] text-white text-lg hover:bg-[#ff4757]/80 active:bg-[#ff4757]/60`}
         >
-          Сумма
+          C
         </button>
-      </div>
+        <button
+          onClick={handleBackspace}
+          disabled={isStarting || !isPumpReady}
+          className={`${btnBase} col-span-2 bg-[#ffa502] text-white text-xl hover:bg-[#ffa502]/80 active:bg-[#ffa502]/60`}
+          style={{ aspectRatio: 'auto' }}
+        >
+          ←
+        </button>
 
-      {/* Numeric keyboard */}
-      <div className="grid grid-cols-3 gap-2 mb-4">
-        {['7', '8', '9', '4', '5', '6', '1', '2', '3'].map(num => (
+        {/* Ряд 2: 7, 8, 9, Объем */}
+        {['7', '8', '9'].map(num => (
           <button
             key={num}
             onClick={() => handleKeyPress(num)}
             disabled={isStarting || !isPumpReady}
-            className="py-3 bg-[#0f3460] text-white rounded-lg text-xl font-semibold
-                     hover:bg-[#0f3460]/80 active:bg-[#0f3460]/60 
-                     disabled:opacity-50 disabled:cursor-not-allowed
-                     transition-colors"
+            className={`${btnBase} bg-[#0f3460] text-white text-xl hover:bg-[#0f3460]/80 active:bg-[#0f3460]/60`}
           >
             {num}
           </button>
         ))}
         <button
-          onClick={handleBackspace}
-          disabled={isStarting || !isPumpReady}
-          className="py-3 bg-[#ffa502] text-white rounded-lg text-xl font-semibold
-                   hover:bg-[#ffa502]/80 disabled:opacity-50 disabled:cursor-not-allowed
-                   transition-colors"
+          onClick={() => isPumpReady && onModeChange('volume')}
+          disabled={!isPumpReady}
+          className={`${btnBase} text-xs font-medium ${
+            mode === 'volume' 
+              ? 'bg-[#00d4aa] text-black' 
+              : 'bg-[#16213e] text-gray-400 hover:bg-[#0f3460]'
+          }`}
         >
-          ←
+          Объем
         </button>
-        <button
-          onClick={() => handleKeyPress('0')}
-          disabled={isStarting || !isPumpReady}
-          className="py-3 bg-[#0f3460] text-white rounded-lg text-xl font-semibold
-                   hover:bg-[#0f3460]/80 disabled:opacity-50 disabled:cursor-not-allowed
-                   transition-colors"
-        >
-          0
-        </button>
-        <button
-          onClick={() => handleKeyPress('.')}
-          disabled={isStarting || !isPumpReady}
-          className="py-3 bg-[#0f3460] text-white rounded-lg text-xl font-semibold
-                   hover:bg-[#0f3460]/80 disabled:opacity-50 disabled:cursor-not-allowed
-                   transition-colors"
-        >
-          .
-        </button>
-      </div>
 
-      {/* Action buttons */}
-      <div className="grid grid-cols-2 gap-2 mb-4">
+        {/* Ряд 3: 4, 5, 6, Цена */}
+        {['4', '5', '6'].map(num => (
+          <button
+            key={num}
+            onClick={() => handleKeyPress(num)}
+            disabled={isStarting || !isPumpReady}
+            className={`${btnBase} bg-[#0f3460] text-white text-xl hover:bg-[#0f3460]/80 active:bg-[#0f3460]/60`}
+          >
+            {num}
+          </button>
+        ))}
         <button
-          onClick={handleClear}
-          disabled={isStarting || !isPumpReady}
-          className="py-3 bg-[#ff4757] text-white rounded-lg text-lg font-semibold
-                   hover:bg-[#ff4757]/80 disabled:opacity-50 disabled:cursor-not-allowed
-                   transition-colors"
+          onClick={() => isPumpReady && onModeChange('amount')}
+          disabled={!isPumpReady}
+          className={`${btnBase} text-xs font-medium ${
+            mode === 'amount' 
+              ? 'bg-[#ffd700] text-black' 
+              : 'bg-[#16213e] text-gray-400 hover:bg-[#0f3460]'
+          }`}
         >
-          C
+          Сумма
         </button>
+
+        {/* Ряд 4: 1, 2, 3 + Ввод */}
+        {['1', '2', '3'].map(num => (
+          <button
+            key={num}
+            onClick={() => handleKeyPress(num)}
+            disabled={isStarting || !isPumpReady}
+            className={`${btnBase} bg-[#0f3460] text-white text-xl hover:bg-[#0f3460]/80 active:bg-[#0f3460]/60`}
+          >
+            {num}
+          </button>
+        ))}
         <button
           onClick={onStart}
           disabled={!canStart || isStarting || !isPumpReady}
-          className="py-3 bg-[#00d4aa] text-black rounded-lg text-lg font-semibold
-                   hover:bg-[#00d4aa]/80 disabled:opacity-50 disabled:cursor-not-allowed
-                   transition-colors flex items-center justify-center gap-2"
+          className={`${btnBase} row-span-2 bg-[#00d4aa] text-black text-base font-bold
+                   hover:bg-[#00b894] active:bg-[#00a382]`}
+          style={{ aspectRatio: 'auto' }}
         >
           {isStarting ? (
-            <>
-              <CircularProgress size={20} color="inherit" />
-              <span>Запуск...</span>
-            </>
+            <CircularProgress size={24} color="inherit" />
           ) : (
             'Ввод'
           )}
         </button>
-      </div>
 
-      {/* Quick values */}
-      <div className="grid grid-cols-2 gap-2">
-        {quickValues.map(qv => (
-          <button
-            key={qv}
-            onClick={() => handleQuickValue(qv)}
-            disabled={isStarting || !isPumpReady}
-            className="py-2 border border-gray-600 text-gray-300 rounded-lg
-                     hover:bg-[#16213e] hover:border-[#00d4aa] hover:text-white
-                     disabled:opacity-50 disabled:cursor-not-allowed
-                     transition-all duration-200 text-sm"
-          >
-            {mode === 'volume' ? `${qv} л.` : `+${qv} руб.`}
-          </button>
-        ))}
+        {/* Ряд 5: 0, 00, "," */}
+        <button
+          onClick={() => handleKeyPress('0')}
+          disabled={isStarting || !isPumpReady}
+          className={`${btnBase} bg-[#0f3460] text-white text-xl hover:bg-[#0f3460]/80 active:bg-[#0f3460]/60`}
+        >
+          0
+        </button>
+        <button
+          onClick={() => handleKeyPress('00')}
+          disabled={isStarting || !isPumpReady}
+          className={`${btnBase} bg-[#0f3460] text-white text-lg hover:bg-[#0f3460]/80 active:bg-[#0f3460]/60`}
+        >
+          00
+        </button>
+        <button
+          onClick={() => handleKeyPress('.')}
+          disabled={isStarting || !isPumpReady}
+          className={`${btnBase} bg-[#0f3460] text-white text-xl hover:bg-[#0f3460]/80 active:bg-[#0f3460]/60`}
+        >
+          ,
+        </button>
       </div>
 
       {/* Статус */}
