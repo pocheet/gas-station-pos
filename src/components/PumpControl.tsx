@@ -1,9 +1,8 @@
 // src/components/PumpControl.tsx
-import { type Configuration, type EquipmentState, PUMP_STATUS, type OrderItem } from '../types/schemas';
+import { type Configuration, type EquipmentState, type OrderItem } from '../types/schemas';
 import { usePumpControl } from '../hooks/usePumpControl';
-import NozzleSelector from './NozzleSelector';
-import OrderTable from './OrderTable';
 import TransactionInfo from './TransactionInfo';
+import OrderTable from './OrderTable';
 import { Alert, Snackbar } from '@mui/material';
 
 interface PumpControlProps {
@@ -11,19 +10,23 @@ interface PumpControlProps {
   config?: Configuration;
   state?: EquipmentState;
   selectedNozzle: number | null;
-  onSelectNozzle: (num: number) => void;
   orders: OrderItem[];
   removeOrder: (id: string) => void;
+  onStart?: () => void;
+  isStarting?: boolean;
+  canStart?: boolean;
 }
 
 export default function PumpControl({ 
   pumpNumber, 
   config, 
   state, 
-  selectedNozzle, 
-  onSelectNozzle,
+  selectedNozzle,
   orders,
   removeOrder,
+  onStart,
+  isStarting = false,
+  canStart = false,
 }: PumpControlProps) {
   const { 
     stopTransaction,
@@ -47,126 +50,54 @@ export default function PumpControl({
   }
 
   const pump = state?.PumpValuesCollection.find(p => p.Number === pumpNumber);
-  const pumpConfig = config?.Pumps.find(p => p.Number === pumpNumber);
-
-  const isPumpReady = pump?.Status === PUMP_STATUS.OFF;
-  const isPumpBusy = pump?.Status === PUMP_STATUS.BUSY || pump?.Status === PUMP_STATUS.BUSY_OVERFLOW;
-  const canReset = pump?.Status === PUMP_STATUS.WAIT_OFF_REMAINDER || 
-                   pump?.Status === PUMP_STATUS.WAIT_OFF_OVERFLOW || 
-                   pump?.Status === PUMP_STATUS.WAIT_RESET;
-  const canContinue = pump?.Status === PUMP_STATUS.WAIT_OFF_REMAINDER;
-  
-  const hasActiveTransaction = pump?.Transaction && 
-    pump.Transaction.TransactionId !== '00000000-0000-0000-0000-000000000000';
 
   const handleStopTransaction = () => {
-    if (!pumpNumber) return;
     stopTransaction({ pumpNumber });
   };
 
   const handleContinueTransaction = () => {
-    if (!pumpNumber) return;
     continueTransaction({ pumpNumber });
   };
 
   const handleResetTransaction = () => {
-    if (!pumpNumber || !pump) return;
-    const transaction = pump.Transaction;
+    if (!pump) return;
     resetTransaction({
       pumpNumber,
-      amount: transaction.RealTimeAmount,
-      pricePerUnit: transaction.PricePerUnit,
+      amount: pump.Transaction.RealTimeAmount,
+      pricePerUnit: pump.Transaction.PricePerUnit,
     });
-  };
-
-  const getStatusText = () => {
-    if (!pump) return '';
-    switch (pump.Status) {
-      case PUMP_STATUS.OFF: return 'Свободна';
-      case PUMP_STATUS.BUSY: return 'Идет отпуск';
-      case PUMP_STATUS.BUSY_OVERFLOW: return 'Перелив';
-      case PUMP_STATUS.WAIT_RESET: return 'Ожидает сброса';
-      case PUMP_STATUS.WAIT_OFF_REMAINDER: return 'Остаток';
-      case PUMP_STATUS.PRESET: return 'Установлена доза';
-      case PUMP_STATUS.WAIT_OFF: return 'Повесьте пистолет';
-      default: return 'Обработка';
-    }
   };
 
   return (
     <div className="max-w-2xl mx-auto">
-      {/* Заголовок и статус */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold text-white">
-          ТРК {pumpNumber}
-        </h1>
-        <span className="text-sm text-gray-400">
-          {getStatusText()}
-        </span>
-      </div>
-
-      {/* NozzleSelector всегда отображается */}
-      <NozzleSelector
-        nozzles={pumpConfig?.Nozzles || []}
-        products={config?.Products || []}
-        pumpState={pump}
+      <TransactionInfo
+        pump={pump}
+        pumpNumber={pumpNumber}
         selectedNozzle={selectedNozzle}
-        onSelectNozzle={onSelectNozzle}
-        disabled={!isPumpReady}
+        onStop={handleStopTransaction}
+        onContinue={handleContinueTransaction}
+        onReset={handleResetTransaction}
+        isStopping={isStopping}
+        isContinuing={isContinuing}
+        isResetting={isResetting}
+        onStart={onStart}
+        isStarting={isStarting}
+        canStart={canStart}
       />
 
-      {/* Таблица заказов */}
       <OrderTable
         orders={orders}
         onRemoveOrder={removeOrder}
+        selectedPump={pumpNumber}
       />
 
-      {/* Если идет налив или требует сброса - показываем информацию и кнопки управления */}
-      {(isPumpBusy || canReset || hasActiveTransaction) && (
-        <TransactionInfo
-          pump={pump!}
-          pumpNumber={pumpNumber}
-          onReset={handleResetTransaction}
-          onStop={handleStopTransaction}
-          onContinue={handleContinueTransaction}
-          isResetting={isResetting}
-          isStopping={isStopping}
-          isContinuing={isContinuing}
-          canReset={canReset}
-          canContinue={canContinue}
-        />
-      )}
-
-      {/* Если ТРК занята другим процессом */}
-      {!isPumpReady && !isPumpBusy && !canReset && !hasActiveTransaction && (
-        <div className="flex flex-col items-center justify-center py-12 text-gray-400">
-          <span className="text-6xl mb-4">⏳</span>
-          <p className="text-lg">ТРК занята другим процессом</p>
-          <p className="text-sm mt-2">Дождитесь завершения операции</p>
-        </div>
-      )}
-
-      {/* Уведомления */}
-      <Snackbar 
-        open={!!error} 
-        autoHideDuration={6000} 
-        onClose={clearError}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert onClose={clearError} severity="error" sx={{ width: '100%' }}>
-          {error}
-        </Alert>
+      <Snackbar open={!!error} autoHideDuration={6000} onClose={clearError}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+        <Alert onClose={clearError} severity="error">{error}</Alert>
       </Snackbar>
-
-      <Snackbar 
-        open={!!success} 
-        autoHideDuration={3000} 
-        onClose={clearSuccess}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert onClose={clearSuccess} severity="success" sx={{ width: '100%' }}>
-          {success}
-        </Alert>
+      <Snackbar open={!!success} autoHideDuration={3000} onClose={clearSuccess}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+        <Alert onClose={clearSuccess} severity="success">{success}</Alert>
       </Snackbar>
     </div>
   );

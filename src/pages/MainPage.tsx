@@ -118,9 +118,11 @@ export default function MainPage() {
             config={config}
             state={state}
             selectedNozzle={selectedNozzle}
-            onSelectNozzle={setSelectedNozzle}
             orders={orders}
             removeOrder={handleRemoveOrder}
+            onStart={handleStartFueling}
+            isStarting={isStarting}
+            canStart={!!selectedNozzle && selectedPump !== null && presetValue !== '0' && !isStarting}
           />
         </main>
 
