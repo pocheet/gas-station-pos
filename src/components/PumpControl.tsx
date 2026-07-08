@@ -22,8 +22,7 @@ interface PumpControlProps {
 }
 
 export default function PumpControl({ 
-  pumpNumber, 
-  config, 
+  pumpNumber,
   state, 
   selectedNozzle,
   orders,

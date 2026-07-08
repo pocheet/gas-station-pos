@@ -130,7 +130,7 @@ export default function MainPage() {
           />
         </main>
 
-        <aside className="w-[350px] bg-[#1a1a2e] overflow-y-auto border-l border-gray-700 p-4">
+        <aside className="w-[350px] bg-[#1a1a2e] overflow-y-auto border-l border-gray-700 p-4 my-5 rounded-l-2xl">
           <PaymentMethodSelector
             value={payFormCode}
             onChange={setPayFormCode}

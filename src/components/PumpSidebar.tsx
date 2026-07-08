@@ -327,8 +327,8 @@ export default function PumpSidebar({
   };
 
   return (
-    <nav className="w-[380px] bg-[#1a1a2e] overflow-y-auto border-r border-gray-700 flex-shrink-0 flex flex-col">
-      <div className="p-2 pb-0">
+    <nav className="w-[380px] bg-[#1a1a2e] overflow-y-auto border-r border-gray-700 flex-shrink-0 my-5 rounded-r-2xl flex flex-col">
+      <div className="p-4 pb-0">
         {/* Переключатели режимов */}
         <div className="grid grid-cols-2 gap-2 mb-2">
           <button
@@ -369,7 +369,7 @@ export default function PumpSidebar({
       </div>
 
       {/* Контент */}
-      <div className="p-2 flex-1">
+      <div className="p-4 flex-1">
         {viewMode === 'dispenser' ? (
           selectedPumpData ? (
             <div className="grid grid-cols-2 gap-2">

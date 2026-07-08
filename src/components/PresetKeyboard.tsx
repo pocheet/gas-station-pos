@@ -28,7 +28,6 @@ export default function PresetKeyboard({
   pumpStatus,
 }: PresetKeyboardProps) {
   const isPumpReady = pumpStatus === PUMP_STATUS.OFF;
-  const displayColor = mode === 'volume' ? '#00d4aa' : '#ffd700';
 
   const handleKeyPress = (key: string) => {
     if (!isPumpReady) return;
@@ -53,12 +52,6 @@ export default function PresetKeyboard({
     onValueChange('0');
   };
 
-  const calculatedValue = pricePerUnit > 0 && value !== '0'
-    ? mode === 'volume'
-      ? (parseFloat(value) * pricePerUnit).toFixed(2)
-      : (parseFloat(value) / pricePerUnit).toFixed(2)
-    : null;
-
   const btnBase = `
     aspect-square rounded-2xl font-semibold
     transition-all duration-200 
@@ -68,38 +61,38 @@ export default function PresetKeyboard({
 
   return (
     <div className="bg-[#1a1a2e] rounded-lg">
-      {/* Display */}
-      <div className="bg-[#0a0a14] rounded-2xl p-4 mb-4 min-h-[100px] flex flex-col justify-center">
-        <div className="text-center">
-          <span 
-            className="text-4xl font-mono font-bold transition-colors duration-300"
-            style={{ color: isPumpReady ? displayColor : '#4b5563' }}
-          >
-            {value}
-          </span>
-          <span className="text-xl text-gray-400 ml-2">
-            {mode === 'volume' ? 'л' : '₽'}
-          </span>
-        </div>
-        <div className="text-center mt-2 h-5">
-          {calculatedValue && isPumpReady ? (
-            <span className="text-sm text-gray-400">
-              ≈ {calculatedValue} {mode === 'volume' ? '₽' : 'л'}
-            </span>
-          ) : (
-            <span className="text-sm text-gray-600">—</span>
-          )}
-        </div>
-      </div>
+      {/* Режим (Объем / Сумма) */}
+      {/* <div className="flex gap-2 mb-4">
+        <button
+          onClick={() => isPumpReady && onModeChange('volume')}
+          disabled={!isPumpReady}
+          className={`flex-1 py-2 rounded-xl font-medium transition-colors
+            ${mode === 'volume' 
+              ? 'bg-[#00d4aa] text-black' 
+              : 'bg-[#16213e] text-gray-300 hover:bg-[#0f3460]'
+            }
+            disabled:opacity-50 disabled:cursor-not-allowed`}
+        >
+          Объем
+        </button>
+        <button
+          onClick={() => isPumpReady && onModeChange('amount')}
+          disabled={!isPumpReady}
+          className={`flex-1 py-2 rounded-xl font-medium transition-colors
+            ${mode === 'amount' 
+              ? 'bg-[#ffd700] text-black' 
+              : 'bg-[#16213e] text-gray-300 hover:bg-[#0f3460]'
+            }
+            disabled:opacity-50 disabled:cursor-not-allowed`}
+        >
+          Сумма
+        </button>
+      </div> */}
 
       {/* Keyboard */}
       <div className="grid grid-cols-4 gap-2">
-        {/* Ряд 1: Esc, C, ← (сдвоенная) */}
-        <button
-          onClick={() => {}}
-          disabled
-          className={`${btnBase} bg-[#16213e] text-gray-600 text-sm cursor-not-allowed`}
-        >
+        {/* Ряд 1: Esc, C, ← */}
+        <button disabled className={`${btnBase} bg-[#16213e] text-gray-600 text-sm cursor-not-allowed`}>
           Esc
         </button>
         <button
@@ -112,7 +105,10 @@ export default function PresetKeyboard({
         <button
           onClick={handleBackspace}
           disabled={isStarting || !isPumpReady}
-          className={`${btnBase} col-span-2 bg-[#ffa502] text-white text-xl hover:bg-[#ffa502]/80 active:bg-[#ffa502]/60`}
+          className="col-span-2 rounded-2xl py-3 font-semibold bg-[#ffa502] text-white text-xl
+                   hover:bg-[#ffa502]/80 active:bg-[#ffa502]/60
+                   disabled:opacity-50 disabled:cursor-not-allowed
+                   transition-all duration-200 flex items-center justify-center"
           style={{ aspectRatio: 'auto' }}
         >
           ←
@@ -120,95 +116,62 @@ export default function PresetKeyboard({
 
         {/* Ряд 2: 7, 8, 9, Объем */}
         {['7', '8', '9'].map(num => (
-          <button
-            key={num}
-            onClick={() => handleKeyPress(num)}
-            disabled={isStarting || !isPumpReady}
-            className={`${btnBase} bg-[#0f3460] text-white text-xl hover:bg-[#0f3460]/80 active:bg-[#0f3460]/60`}
-          >
+          <button key={num} onClick={() => handleKeyPress(num)} disabled={isStarting || !isPumpReady}
+            className={`${btnBase} bg-[#0f3460] text-white text-xl hover:bg-[#0f3460]/80 active:bg-[#0f3460]/60`}>
             {num}
           </button>
         ))}
-        <button
-          onClick={() => isPumpReady && onModeChange('volume')}
-          disabled={!isPumpReady}
+        <button onClick={() => isPumpReady && onModeChange('volume')} disabled={!isPumpReady}
           className={`${btnBase} text-xs font-medium ${
-            mode === 'volume' 
-              ? 'bg-[#00d4aa] text-black' 
-              : 'bg-[#16213e] text-gray-400 hover:bg-[#0f3460]'
-          }`}
-        >
+            mode === 'volume' ? 'bg-[#00d4aa] text-black' : 'bg-[#16213e] text-gray-400 hover:bg-[#0f3460]'
+          }`}>
           Объем
         </button>
 
-        {/* Ряд 3: 4, 5, 6, Цена */}
+        {/* Ряд 3: 4, 5, 6, Сумма */}
         {['4', '5', '6'].map(num => (
-          <button
-            key={num}
-            onClick={() => handleKeyPress(num)}
-            disabled={isStarting || !isPumpReady}
-            className={`${btnBase} bg-[#0f3460] text-white text-xl hover:bg-[#0f3460]/80 active:bg-[#0f3460]/60`}
-          >
+          <button key={num} onClick={() => handleKeyPress(num)} disabled={isStarting || !isPumpReady}
+            className={`${btnBase} bg-[#0f3460] text-white text-xl hover:bg-[#0f3460]/80 active:bg-[#0f3460]/60`}>
             {num}
           </button>
         ))}
-        <button
-          onClick={() => isPumpReady && onModeChange('amount')}
-          disabled={!isPumpReady}
+        <button onClick={() => isPumpReady && onModeChange('amount')} disabled={!isPumpReady}
           className={`${btnBase} text-xs font-medium ${
-            mode === 'amount' 
-              ? 'bg-[#ffd700] text-black' 
-              : 'bg-[#16213e] text-gray-400 hover:bg-[#0f3460]'
-          }`}
-        >
+            mode === 'amount' ? 'bg-[#ffd700] text-black' : 'bg-[#16213e] text-gray-400 hover:bg-[#0f3460]'
+          }`}>
           Сумма
         </button>
 
-        {/* Ряд 4: 1, 2, 3 + Ввод */}
+        {/* Ряд 4: 1, 2, 3 + Ввод (row-span-2) */}
         {['1', '2', '3'].map(num => (
-          <button
-            key={num}
-            onClick={() => handleKeyPress(num)}
-            disabled={isStarting || !isPumpReady}
-            className={`${btnBase} bg-[#0f3460] text-white text-xl hover:bg-[#0f3460]/80 active:bg-[#0f3460]/60`}
-          >
+          <button key={num} onClick={() => handleKeyPress(num)} disabled={isStarting || !isPumpReady}
+            className={`${btnBase} bg-[#0f3460] text-white text-xl hover:bg-[#0f3460]/80 active:bg-[#0f3460]/60`}>
             {num}
           </button>
         ))}
         <button
           onClick={onStart}
           disabled={!canStart || isStarting || !isPumpReady}
-          className={`${btnBase} row-span-2 bg-[#00d4aa] text-black text-base font-bold
-                   hover:bg-[#00b894] active:bg-[#00a382]`}
+          className="row-span-2 rounded-2xl font-semibold bg-[#00d4aa] text-black text-base font-bold
+                   hover:bg-[#00b894] active:bg-[#00a382]
+                   disabled:opacity-50 disabled:cursor-not-allowed
+                   transition-all duration-200 flex items-center justify-center"
           style={{ aspectRatio: 'auto' }}
         >
-          {isStarting ? (
-            <CircularProgress size={24} color="inherit" />
-          ) : (
-            'Ввод'
-          )}
+          {isStarting ? <CircularProgress size={24} color="inherit" /> : 'Ввод'}
         </button>
 
         {/* Ряд 5: 0, 00, "," */}
-        <button
-          onClick={() => handleKeyPress('0')}
-          disabled={isStarting || !isPumpReady}
-          className={`${btnBase} bg-[#0f3460] text-white text-xl hover:bg-[#0f3460]/80 active:bg-[#0f3460]/60`}
-        >
+        <button onClick={() => handleKeyPress('0')} disabled={isStarting || !isPumpReady}
+          className={`${btnBase} bg-[#0f3460] text-white text-xl hover:bg-[#0f3460]/80 active:bg-[#0f3460]/60`}>
           0
         </button>
-        <button
-          onClick={() => handleKeyPress('00')}
-          disabled={isStarting || !isPumpReady}
-          className={`${btnBase} bg-[#0f3460] text-white text-lg hover:bg-[#0f3460]/80 active:bg-[#0f3460]/60`}
-        >
+        <button onClick={() => handleKeyPress('00')} disabled={isStarting || !isPumpReady}
+          className={`${btnBase} bg-[#0f3460] text-white text-lg hover:bg-[#0f3460]/80 active:bg-[#0f3460]/60`}>
           00
         </button>
-        <button
-          onClick={() => handleKeyPress('.')}
-          disabled={isStarting || !isPumpReady}
-          className={`${btnBase} bg-[#0f3460] text-white text-xl hover:bg-[#0f3460]/80 active:bg-[#0f3460]/60`}
-        >
+        <button onClick={() => handleKeyPress('.')} disabled={isStarting || !isPumpReady}
+          className={`${btnBase} bg-[#0f3460] text-white text-xl hover:bg-[#0f3460]/80 active:bg-[#0f3460]/60`}>
           ,
         </button>
       </div>
