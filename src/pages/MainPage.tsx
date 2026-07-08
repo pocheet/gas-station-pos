@@ -123,6 +123,10 @@ export default function MainPage() {
             onStart={handleStartFueling}
             isStarting={isStarting}
             canStart={!!selectedNozzle && selectedPump !== null && presetValue !== '0' && !isStarting}
+            presetMode={presetMode}
+            presetValue={presetValue}
+            pricePerUnit={getSelectedNozzlePrice()}
+            discountPercent={discountPercent}
           />
         </main>
 

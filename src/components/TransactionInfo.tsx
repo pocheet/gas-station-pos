@@ -15,6 +15,10 @@ interface TransactionInfoProps {
   onStart?: () => void;
   isStarting?: boolean;
   canStart?: boolean;
+  presetMode?: 'volume' | 'amount';
+  presetValue?: string;
+  pricePerUnit?: number;
+  discountPercent?: number | null;
 }
 
 export default function TransactionInfo({
@@ -30,10 +34,14 @@ export default function TransactionInfo({
   onStart,
   isStarting = false,
   canStart = false,
+  presetMode = 'volume',
+  presetValue = '0',
+  pricePerUnit = 0,
+  discountPercent = null,
 }: TransactionInfoProps) {
-  const transaction = pump?.Transaction;
-  const hasTransaction = transaction && transaction.TransactionId !== '00000000-0000-0000-0000-000000000000';
   const status = pump?.Status ?? PUMP_STATUS.OFF;
+  const transaction = pump?.Transaction;
+  const isActiveTransaction = transaction && transaction.TransactionId !== '00000000-0000-0000-0000-000000000000';
 
   const isPumpReady = status === PUMP_STATUS.OFF || status === PUMP_STATUS.PRESET;
   const isFueling = status === PUMP_STATUS.BUSY || status === PUMP_STATUS.BUSY_OVERFLOW;
@@ -43,14 +51,10 @@ export default function TransactionInfo({
                    status === PUMP_STATUS.WAIT_RESET;
   const isProcessing = isResetting || isStopping || isContinuing || isStarting;
 
-  const progress = hasTransaction && transaction.PresetVolume > 0 
-    ? (transaction.RealTimeVolume / transaction.PresetVolume) * 100 
-    : 0;
-
-  const nozzle = hasTransaction 
-    ? pump?.Nozzles.find(n => n.Number === transaction.NozzleNumber)
-    : selectedNozzle 
-      ? pump?.Nozzles.find(n => n.Number === selectedNozzle)
+  const nozzle = selectedNozzle 
+    ? pump?.Nozzles.find(n => n.Number === selectedNozzle)
+    : isActiveTransaction
+      ? pump?.Nozzles.find(n => n.Number === transaction.NozzleNumber)
       : null;
 
   const getStatusText = () => {
@@ -72,8 +76,31 @@ export default function TransactionInfo({
     return '#4ade80';
   };
 
-  const formatAmount = (n: number) => n.toFixed(2).replace('.', ',');
-  const formatVolume = (n: number) => n.toFixed(2).replace('.', ',');
+  const formatAmount = (n: number) => isNaN(n) ? '0,00' : n.toFixed(2).replace('.', ',');
+  const formatVolume = (n: number) => isNaN(n) ? '0,00' : n.toFixed(2).replace('.', ',');
+
+  // Расчетные значения
+  const displayValue = parseFloat(presetValue) || 0;
+  const calculatedAmount = presetMode === 'volume' 
+    ? displayValue * pricePerUnit 
+    : displayValue;
+  const calculatedVolume = presetMode === 'amount' && pricePerUnit > 0
+    ? displayValue / pricePerUnit 
+    : displayValue;
+
+  // Значения для отображения
+  const showVolume = isActiveTransaction && (isFueling || isStopped || canReset)
+    ? transaction.RealTimeVolume
+    : calculatedVolume;
+  const showAmount = isActiveTransaction && (isFueling || isStopped || canReset)
+    ? transaction.RealTimeAmount
+    : calculatedAmount;
+
+  // Прогресс
+  const progress = isActiveTransaction && transaction.PresetVolume > 0 
+    ? (transaction.RealTimeVolume / transaction.PresetVolume) * 100 
+    : 0;
+  const showProgress = isFueling || isStopped || isActiveTransaction;
 
   const btnBase = `
     flex-1 py-3 rounded-2xl font-semibold text-sm
@@ -84,9 +111,6 @@ export default function TransactionInfo({
 
   return (
     <div className="mb-6 rounded-2xl overflow-hidden" style={{ backgroundColor: '#0f3460' }}>
-      {/* Status indicator — верхняя полоска */}
-      <div className="h-1.5" style={{ backgroundColor: getStatusColor() }} />
-
       <div className="p-4">
         {/* Заголовок и статус */}
         <div className="flex items-center justify-between mb-3">
@@ -113,104 +137,94 @@ export default function TransactionInfo({
             <span className="text-sm text-[#d1d5db] font-medium">
               {nozzle.ProductRef}
             </span>
-            <span className="text-xs text-[#ffd700] font-mono ml-auto">
-              {formatAmount(nozzle.DefaultPricePerUnit)} ₽/л
-            </span>
-          </div>
-        )}
-
-        {/* Прогресс бар */}
-        {(isFueling || isStopped) && hasTransaction && transaction.PresetVolume > 0 && (
-          <div className="mb-3">
-            <div className="flex justify-between text-xs mb-1">
-              {/* <span className="text-gray-400">Прогресс</span> */}
-              {/* <span className="font-semibold" style={{ color: getStatusColor() }}>
-                {progress.toFixed(1)}%
-              </span> */}
-            </div>
-            <div className="h-2 bg-[#0a0a14] rounded-full overflow-hidden">
-              <div 
-                className="h-full rounded-full transition-all duration-500"
-                style={{ 
-                  width: `${Math.min(progress, 100)}%`,
-                  backgroundColor: getStatusColor(),
-                }}
-              />
-            </div>
+            {discountPercent && (
+              <span className="text-xs text-[#ffa502] font-medium ml-auto">
+                –{discountPercent}%
+              </span>
+            )}
           </div>
         )}
 
         {/* Показатели */}
-        {hasTransaction && (
-          <div className="grid grid-cols-2 gap-2 mb-3">
-            <div className="bg-[#0a0a14] rounded-xl p-2">
-              <div className="text-gray-400 text-[10px] uppercase mb-0.5">Объем</div>
-              <div className="text-xl font-mono font-bold text-[#00d4aa]">
-                {formatVolume(transaction.RealTimeVolume)}
-                <span className="text-xs ml-1">л</span>
+        {nozzle && (
+          <>
+            {/* Прогресс бар — всегда, но разного цвета */}
+            <div className="mb-3">
+              <div className="flex justify-between text-xs mb-1">
+                <span className="text-gray-400">Прогресс</span>
+                <span className="font-semibold" style={{ 
+                  color: showProgress && progress > 0 ? getStatusColor() : '#4b5563' 
+                }}>
+                  {showProgress ? `${progress.toFixed(1)}%` : '—'}
+                </span>
+              </div>
+              <div className="h-2 bg-[#0a0a14] rounded-full overflow-hidden">
+                <div 
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{ 
+                    width: `${Math.min(progress, 100)}%`,
+                    backgroundColor: progress > 0 ? getStatusColor() : '#4b5563',
+                  }}
+                />
               </div>
             </div>
-            <div className="bg-[#0a0a14] rounded-xl p-2">
-              <div className="text-gray-400 text-[10px] uppercase mb-0.5">Сумма</div>
-              <div className="text-xl font-mono font-bold text-[#ffd700]">
-                {formatAmount(transaction.RealTimeAmount)}
-                <span className="text-xs ml-1">₽</span>
+
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              <div className="bg-[#0a0a14] rounded-xl p-2">
+                <div className="text-gray-400 text-[10px] uppercase mb-0.5">
+                  {presetMode === 'amount' && !isActiveTransaction ? '≈ Объем' : 'Объем'}
+                </div>
+                <div className="text-xl font-mono font-bold text-[#00d4aa]">
+                  {formatVolume(showVolume)}
+                  <span className="text-xs ml-1">л</span>
+                </div>
+              </div>
+              <div className="bg-[#0a0a14] rounded-xl p-2">
+                <div className="text-gray-400 text-[10px] uppercase mb-0.5">
+                  {presetMode === 'volume' && !isActiveTransaction ? '≈ Сумма' : 'Сумма'}
+                </div>
+                <div className="text-xl font-mono font-bold text-[#ffd700]">
+                  {formatAmount(showAmount)}
+                  <span className="text-xs ml-1">₽</span>
+                </div>
               </div>
             </div>
-          </div>
+          </>
         )}
 
-        {/* Три кнопки в ряд */}
+        {/* Три кнопки */}
         <div className="flex gap-2">
-          {/* Запуск / Продолжить */}
           {isStopped ? (
-            <button
-              onClick={onContinue}
-              disabled={isProcessing}
-              className={`${btnBase} bg-[#00d4aa] text-black hover:bg-[#00b894]`}
-            >
+            <button onClick={onContinue} disabled={isProcessing}
+              className={`${btnBase} bg-[#00d4aa] text-black hover:bg-[#00b894]`}>
               {isContinuing ? <CircularProgress size={16} color="inherit" /> : null}
               Продолжить
             </button>
           ) : (
-            <button
-              onClick={onStart}
+            <button onClick={onStart}
               disabled={!canStart || !isPumpReady || isProcessing}
               className={`${btnBase} ${
                 isPumpReady && canStart
                   ? 'bg-[#00d4aa] text-black hover:bg-[#00b894]'
                   : 'bg-[#16213e] text-gray-600'
-              }`}
-            >
+              }`}>
               {isStarting ? <CircularProgress size={16} color="inherit" /> : null}
               Запуск
             </button>
           )}
 
-          {/* Остановить */}
-          <button
-            onClick={onStop}
-            disabled={!isFueling || isProcessing}
+          <button onClick={onStop} disabled={!isFueling || isProcessing}
             className={`${btnBase} ${
-              isFueling
-                ? 'bg-[#ffa502] text-black hover:bg-[#ffbe76]'
-                : 'bg-[#16213e] text-gray-600'
-            }`}
-          >
+              isFueling ? 'bg-[#ffa502] text-black hover:bg-[#ffbe76]' : 'bg-[#16213e] text-gray-600'
+            }`}>
             {isStopping ? <CircularProgress size={16} color="inherit" /> : null}
             Остановить
           </button>
 
-          {/* Завершить */}
-          <button
-            onClick={onReset}
-            disabled={!canReset || isProcessing}
+          <button onClick={onReset} disabled={!canReset || isProcessing}
             className={`${btnBase} ${
-              canReset
-                ? 'bg-[#00d4aa] text-black hover:bg-[#00b894]'
-                : 'bg-[#16213e] text-gray-600'
-            }`}
-          >
+              canReset ? 'bg-[#00d4aa] text-black hover:bg-[#00b894]' : 'bg-[#16213e] text-gray-600'
+            }`}>
             {isResetting ? <CircularProgress size={16} color="inherit" /> : null}
             Завершить
           </button>

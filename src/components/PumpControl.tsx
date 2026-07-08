@@ -15,6 +15,10 @@ interface PumpControlProps {
   onStart?: () => void;
   isStarting?: boolean;
   canStart?: boolean;
+  presetMode?: 'volume' | 'amount';
+  presetValue?: string;
+  pricePerUnit?: number;
+  discountPercent?: number | null;
 }
 
 export default function PumpControl({ 
@@ -27,6 +31,10 @@ export default function PumpControl({
   onStart,
   isStarting = false,
   canStart = false,
+  presetMode,
+  presetValue,
+  pricePerUnit,
+  discountPercent,
 }: PumpControlProps) {
   const { 
     stopTransaction,
@@ -38,7 +46,8 @@ export default function PumpControl({
     error, 
     success,
     clearError,
-    clearSuccess 
+    clearSuccess,
+    
   } = usePumpControl();
 
   if (!pumpNumber) {
@@ -83,6 +92,10 @@ export default function PumpControl({
         onStart={onStart}
         isStarting={isStarting}
         canStart={canStart}
+        presetMode={presetMode}
+        presetValue={presetValue}
+        pricePerUnit={pricePerUnit}
+        discountPercent={discountPercent}
       />
 
       <OrderTable
