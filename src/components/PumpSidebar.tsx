@@ -1,5 +1,5 @@
 // src/components/PumpSidebar.tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { type PumpValue, type SelectedNozzleValue, PUMP_STATUS } from '../types/schemas';
 
 interface PumpSidebarProps {
@@ -195,11 +195,15 @@ function NozzleCard({
   nozzle,
   isSelected,
   onSelect,
+  disabled = false,
+  isActiveNozzle = false,
 }: { 
   pump: PumpValue;
   nozzle: { Number: number; ProductRef: string; VolumeTotalCounter: number; AmountTotalCounter: number; DefaultPricePerUnit: number };
   isSelected: boolean;
   onSelect: (pumpNumber: number, nozzleNumber: number) => void;
+  disabled?: boolean;
+  isActiveNozzle?: boolean;
 }) {
   // Цвет только для выбранного пистолета
   const activeColor = '#00d4aa';
@@ -209,12 +213,12 @@ function NozzleCard({
   return (
     <button
       onClick={() => pump.EnableService && onSelect(pump.Number, nozzle.Number)}
-      disabled={!pump.EnableService}
+      disabled={disabled}
       className={`
         relative flex flex-col rounded-xl overflow-hidden
         transition-all duration-200 text-left
-        ${isSelected ? 'ring-2 ring-[#00d4aa]/50' : 'ring-1 ring-transparent'}
-        ${pump.EnableService ? 'cursor-pointer hover:brightness-110' : 'opacity-60 cursor-not-allowed'}
+        ${isSelected || isActiveNozzle ? 'ring-2 ring-[#00d4aa]/50' : 'ring-1 ring-transparent'}
+        ${!disabled ? 'cursor-pointer hover:brightness-110' : 'opacity-60 cursor-not-allowed'}
       `}
       style={{ backgroundColor: '#0f3460' }}
     >
@@ -224,10 +228,10 @@ function NozzleCard({
           <span 
             className="inline-flex items-center justify-center rounded-md px-2 py-0.5 font-bold"
             style={{ 
-              backgroundColor: isSelected ? `${nozzleColor}20` : '#16213e', 
+              backgroundColor: (isSelected || isActiveNozzle) ? `${nozzleColor}20` : '#16213e', 
               color: nozzleColor, 
               fontSize: '14px',
-              border: isSelected ? `1px solid ${nozzleColor}40` : '1px solid transparent',
+              border: (isSelected || isActiveNozzle) ? `1px solid ${nozzleColor}40` : '1px solid transparent',
             }}
           >
             {nozzle.Number}
@@ -263,7 +267,7 @@ function NozzleCard({
         </div>
       </div>
 
-      {isBusy && (
+      {isBusy && isActiveNozzle && (
         <div className="absolute bottom-0 left-1.5 right-0 h-0.5 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
       )}
     </button>
@@ -281,6 +285,38 @@ export default function PumpSidebar({
   const sortedPumps = [...pumps].sort((a, b) => a.Number - b.Number);
   const selectedPumpData = sortedPumps.find(p => p.Number === selectedPump);
 
+  const isPumpLocked = selectedPumpData 
+    ? selectedPumpData.Status === PUMP_STATUS.BUSY ||
+      selectedPumpData.Status === PUMP_STATUS.BUSY_OVERFLOW ||
+      selectedPumpData.Status === PUMP_STATUS.WAIT_OFF_REMAINDER ||
+      selectedPumpData.Status === PUMP_STATUS.WAIT_OFF_OVERFLOW ||
+      selectedPumpData.Status === PUMP_STATUS.WAIT_RESET
+    : false;
+
+  // При переключении на "Диспенсер" — авто-выбор пистолета
+  useEffect(() => {
+    if (viewMode === 'dispenser' && selectedPumpData && !selectedNozzle) {
+      const tx = selectedPumpData.Transaction;
+      const hasTransaction = tx && tx.TransactionId !== '00000000-0000-0000-0000-000000000000';
+      
+      if (hasTransaction && tx.NozzleNumber) {
+        onSelectNozzle(tx.NozzleNumber);
+      } else if (selectedPumpData.Nozzles.length > 0) {
+        onSelectNozzle(selectedPumpData.Nozzles[0].Number);
+      }
+    }
+  }, [viewMode, selectedPump]);
+
+  // Обновляем selectedNozzle при изменении транзакции (во время налива)
+  useEffect(() => {
+    if (isPumpLocked && selectedPumpData) {
+      const tx = selectedPumpData.Transaction;
+      if (tx && tx.NozzleNumber && tx.TransactionId !== '00000000-0000-0000-0000-000000000000') {
+        onSelectNozzle(tx.NozzleNumber);
+      }
+    }
+  }, [selectedPumpData?.Transaction?.NozzleNumber, isPumpLocked]);
+
   const handleSelectDispenser = (pumpNumber: number) => {
     onSelectPump(pumpNumber);
   };
@@ -291,8 +327,8 @@ export default function PumpSidebar({
   };
 
   return (
-    <nav className="w-[380px] bg-[#1a1a2e] overflow-y-auto border-r border-gray-700 flex-shrink-0 flex flex-col">
-      <div className="p-2 pb-0">
+    <nav className="w-[380px] bg-[#1a1a2e] overflow-y-auto border-r border-gray-700 flex-shrink-0 my-5 rounded-r-2xl flex flex-col">
+      <div className="p-4 pb-0">
         {/* Переключатели режимов */}
         <div className="grid grid-cols-2 gap-2 mb-2">
           <button
@@ -333,21 +369,28 @@ export default function PumpSidebar({
       </div>
 
       {/* Контент */}
-      <div className="p-2 flex-1">
+      <div className="p-4 flex-1">
         {viewMode === 'dispenser' ? (
           selectedPumpData ? (
             <div className="grid grid-cols-2 gap-2">
               {selectedPumpData.Nozzles
                 .sort((a, b) => a.Number - b.Number)
-                .map(nozzle => (
-                  <NozzleCard
-                    key={nozzle.Number}
-                    pump={selectedPumpData}
-                    nozzle={nozzle}
-                    isSelected={selectedNozzle === nozzle.Number && selectedPump === selectedPumpData.Number}
-                    onSelect={handleSelectNozzle}
-                  />
-                ))
+                .map(nozzle => {
+                  const isActiveNozzle = selectedPumpData.Transaction?.NozzleNumber === nozzle.Number &&
+                    selectedPumpData.Transaction?.TransactionId !== '00000000-0000-0000-0000-000000000000';
+                  
+                  return (
+                    <NozzleCard
+                      key={nozzle.Number}
+                      pump={selectedPumpData}
+                      nozzle={nozzle}
+                      isSelected={selectedNozzle === nozzle.Number && selectedPump === selectedPumpData.Number}
+                      onSelect={handleSelectNozzle}
+                      disabled={isPumpLocked && !isActiveNozzle}
+                      isActiveNozzle={isActiveNozzle}
+                    />
+                  );
+                })
               }
             </div>
           ) : (

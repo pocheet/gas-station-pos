@@ -118,13 +118,19 @@ export default function MainPage() {
             config={config}
             state={state}
             selectedNozzle={selectedNozzle}
-            onSelectNozzle={setSelectedNozzle}
             orders={orders}
             removeOrder={handleRemoveOrder}
+            onStart={handleStartFueling}
+            isStarting={isStarting}
+            canStart={!!selectedNozzle && selectedPump !== null && presetValue !== '0' && !isStarting}
+            presetMode={presetMode}
+            presetValue={presetValue}
+            pricePerUnit={getSelectedNozzlePrice()}
+            discountPercent={discountPercent}
           />
         </main>
 
-        <aside className="w-[350px] bg-[#1a1a2e] overflow-y-auto border-l border-gray-700 p-4">
+        <aside className="w-[350px] bg-[#1a1a2e] overflow-y-auto border-l border-gray-700 p-4 my-5 rounded-l-2xl">
           <PaymentMethodSelector
             value={payFormCode}
             onChange={setPayFormCode}
