@@ -24,7 +24,7 @@ export default function PresetKeyboard({
   onStart,
   isStarting = false,
   canStart = false,
-  pricePerUnit = 0,
+  // pricePerUnit = 0,
   pumpStatus,
 }: PresetKeyboardProps) {
   const isPumpReady = pumpStatus === PUMP_STATUS.OFF;
