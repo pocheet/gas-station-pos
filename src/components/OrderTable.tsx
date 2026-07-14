@@ -7,26 +7,40 @@ interface OrderTableProps {
   selectedPump?: number | null;
 }
 
-const formatAmount = (amount: number): string => amount.toFixed(2).replace('.', ',');
-const formatVolume = (volume: number): string => volume.toFixed(2).replace('.', ',');
+const formatAmount = (amount: number): string => isNaN(amount) ? '0,00' : amount.toFixed(2).replace('.', ',');
+const formatVolume = (volume: number): string => isNaN(volume) ? '0,00' : volume.toFixed(2).replace('.', ',');
 
-// Создаём 3 строки, заполненные данными или пустые
 const ROWS_COUNT = 3;
 
 export default function OrderTable({ orders, onRemoveOrder, selectedPump }: OrderTableProps) {
-  // Дополняем массив до 3 строк
   const rows: (OrderItem | null)[] = Array.from({ length: ROWS_COUNT }, (_, i) => orders[i] || null);
+
+  const orderNumber = orders.length > 0 ? `№${orders.length}` : '—';
 
   return (
     <div className="mb-6">
-
-      {/* Заголовок */}
+      {/* Заголовок "Заказ №" */}
       <div 
         className="grid gap-2 px-3 py-2 rounded-t-xl text-[10px] uppercase tracking-wider font-semibold"
         style={{ 
           gridTemplateColumns: '30px 80px 40px 75px 40px 70px 50px 80px 30px',
           backgroundColor: '#0f3460',
           color: '#6c7293',
+        }}
+      >
+        <span className="text-center col-span-9">
+          Заказ {orderNumber}
+        </span>
+      </div>
+
+      {/* Заголовок колонок */}
+      <div 
+        className="grid gap-2 px-3 py-2 text-[10px] uppercase tracking-wider font-semibold"
+        style={{ 
+          gridTemplateColumns: '30px 80px 40px 75px 40px 70px 50px 80px 30px',
+          backgroundColor: '#0f3460',
+          color: '#6c7293',
+          borderTop: '1px solid #2a2a45',
         }}
       >
         <span className="text-center">№</span>
@@ -62,41 +76,34 @@ export default function OrderTable({ orders, onRemoveOrder, selectedPump }: Orde
                 minHeight: '44px',
               }}
             >
-              {/* Номер */}
               <span className={`text-center text-xs font-bold ${isEmpty ? 'text-[#4b5563]' : 'text-[#00d4aa]'}`}>
                 {isEmpty ? '—' : index + 1}
               </span>
 
-              {/* Товар */}
               <span className={`text-xs font-medium truncate ${isEmpty ? 'text-[#4b5563]' : 'text-[#e8e8f0]'}`}>
                 {isEmpty ? '—' : order.productName}
               </span>
 
-              {/* Номер колонки */}
               <span className={`text-center text-xs font-bold rounded-md py-0.5 ${
                 isEmpty ? 'text-[#4b5563]' : 'bg-[#0a0a14] text-[#d1d5db]'
               }`}>
                 {isEmpty ? '—' : order.pumpNumber}
               </span>
 
-              {/* Литры */}
               <span className={`text-right font-mono text-xs font-semibold ${isEmpty ? 'text-[#4b5563]' : 'text-[#00d4aa]'}`}>
                 {isEmpty ? '—' : formatVolume(order.volume)}
               </span>
 
-              {/* Номер пистолета */}
               <span className={`text-center text-xs rounded-md py-0.5 ${
                 isEmpty ? 'text-[#4b5563]' : 'bg-[#0a0a14] text-[#9ca3af]'
               }`}>
                 {isEmpty ? '—' : `№${order.nozzleNumber}`}
               </span>
 
-              {/* Цена за литр */}
               <span className={`text-right font-mono text-xs ${isEmpty ? 'text-[#4b5563]' : 'text-[#d1d5db]'}`}>
                 {isEmpty ? '—' : formatAmount(order.pricePerUnit)}
               </span>
 
-              {/* Скидка */}
               <span className={`text-center text-xs font-semibold ${
                 isEmpty 
                   ? 'text-[#4b5563]' 
@@ -107,12 +114,10 @@ export default function OrderTable({ orders, onRemoveOrder, selectedPump }: Orde
                 {isEmpty ? '—' : order.discountPercent ? `${order.discountPercent}%` : '0%'}
               </span>
 
-              {/* Итоговая сумма */}
               <span className={`text-right font-mono text-sm font-bold ${isEmpty ? 'text-[#4b5563]' : 'text-[#ffd700]'}`}>
                 {isEmpty ? '—' : formatAmount(order.totalAmount)}
               </span>
 
-              {/* Кнопка удаления */}
               <div className="flex justify-center">
                 {!isEmpty && (
                   <button

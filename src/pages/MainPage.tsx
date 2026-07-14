@@ -41,12 +41,15 @@ export default function MainPage() {
     if (!selectedPump || !selectedNozzle || presetValue === '0') return;
 
     const productName = pump?.Nozzles.find(n => n.Number === selectedNozzle)?.ProductRef || '—';
-    const pricePerUnit = getSelectedNozzlePrice();
-    const volume = parseFloat(presetValue);
-    const totalAmount = volume * pricePerUnit;
+    const basePrice = pump?.Nozzles.find(n => n.Number === selectedNozzle)?.DefaultPricePerUnit ?? 0;
+    const pricePerUnit = discountPercent ? basePrice * (1 - discountPercent / 100) : basePrice;
+    const value = parseFloat(presetValue);
+
+    // В зависимости от режима считаем объем и сумму
+    const volume = presetMode === 'volume' ? value : value / pricePerUnit;
+    const totalAmount = presetMode === 'amount' ? value : value * pricePerUnit;
 
     setOrders(prev => {
-      // Ищем существующий заказ для этой ТРК
       const existingIndex = prev.findIndex(o => o.pumpNumber === selectedPump);
       
       const updatedOrder: OrderItem = {
@@ -64,16 +67,14 @@ export default function MainPage() {
       };
 
       if (existingIndex >= 0) {
-        // Обновляем существующую строку
         const updated = [...prev];
         updated[existingIndex] = updatedOrder;
         return updated;
       } else {
-        // Добавляем новую строку
         return [...prev, updatedOrder];
       }
     });
-  }, [selectedPump, selectedNozzle, presetValue, discountPercent]);
+  }, [selectedPump, selectedNozzle, presetValue, presetMode, discountPercent]);
 
   // Сброс строки при смене ТРК
   const handleSelectPump = (num: number) => {
