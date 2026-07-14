@@ -319,6 +319,7 @@ export default function PumpSidebar({
 
   const handleSelectDispenser = (pumpNumber: number) => {
     onSelectPump(pumpNumber);
+    setViewMode('dispenser');
   };
 
   const handleSelectNozzle = (pumpNumber: number, nozzleNumber: number) => {
