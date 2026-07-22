@@ -100,7 +100,7 @@ export default function PumpControl({
         pricePerUnit={pricePerUnit}
         discountPercent={discountPercent}
       /> */}
-      <div className="h-60"></div>
+      <div className="h-50"></div>
 
       {/* Таблица заказа */}
       <OrderTable

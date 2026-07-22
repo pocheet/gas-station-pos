@@ -44,7 +44,7 @@ export default function OrderInfo({
 
   return (
     <div className="mt-3 rounded-2xl overflow-hidden" style={{ backgroundColor: '#0f3460' }}>
-      <div className="grid grid-cols-4 divide-x divide-[#2a2a45]">
+      <div className="grid grid-cols-4">
         {/* Сумма */}
         <div className="p-4 flex flex-col">
           <span className="text-[10px] uppercase tracking-wider font-semibold text-[#6c7293] mb-1">Сумма</span>
@@ -64,11 +64,11 @@ export default function OrderInfo({
         </div>
 
         {/* Кнопки управления */}
-        <div className="p-3 flex flex-col justify-center gap-2">
+        <div className="p-3 flex flex-col justify-center gap-2 min-h-[104px]">
           {/* Черновик — Создать заказ */}
           {status === 'draft' && (
             <button onClick={onCreateOrder} disabled={!canCreate || isProcessing}
-              className="w-full py-3 rounded-xl font-semibold text-sm bg-[#00d4aa] text-black hover:bg-[#00b894]
+              className="w-full flex-1 rounded-xl font-semibold text-sm bg-[#00d4aa] text-black hover:bg-[#00b894]
                       disabled:bg-[#16213e] disabled:text-gray-600 disabled:cursor-not-allowed transition-all duration-200">
               Создать заказ
             </button>
@@ -77,7 +77,7 @@ export default function OrderInfo({
           {/* Создан — Запуск */}
           {status === 'created' && (
             <button onClick={onStartFueling} disabled={!canStart || isProcessing}
-              className="w-full py-3 rounded-xl font-semibold text-sm bg-[#3b82f6] text-white hover:bg-[#2563eb]
+              className="w-full flex-1 rounded-xl font-semibold text-sm bg-[#3b82f6] text-white hover:bg-[#2563eb]
                       disabled:bg-[#16213e] disabled:text-gray-600 disabled:cursor-not-allowed transition-all duration-200">
               {isStarting ? <span className="flex items-center justify-center gap-1"><CircularProgress size={16} color="inherit" /> Запуск...</span> : 'Запуск'}
             </button>
@@ -86,7 +86,7 @@ export default function OrderInfo({
           {/* Налив идёт — Остановить */}
           {status === 'fueling' && !isStopped && (
             <button onClick={onStopFueling} disabled={isProcessing}
-              className="w-full py-3 rounded-xl font-semibold text-sm bg-[#ffa502] text-black hover:bg-[#ffbe76]
+              className="w-full flex-1 rounded-xl font-semibold text-sm bg-[#ffa502] text-black hover:bg-[#ffbe76]
                       disabled:bg-[#16213e] disabled:text-gray-600 disabled:cursor-not-allowed transition-all duration-200">
               {isStopping ? <span className="flex items-center justify-center gap-1"><CircularProgress size={16} color="inherit" /> Остановка...</span> : 'Остановить'}
             </button>
@@ -96,12 +96,12 @@ export default function OrderInfo({
           {status === 'fueling' && isStopped && (
             <>
               <button onClick={onContinueFueling} disabled={isProcessing}
-                className="w-full py-2.5 rounded-xl font-semibold text-sm bg-[#00d4aa] text-black hover:bg-[#00b894]
+                className="w-full flex-1 rounded-xl font-semibold text-sm bg-[#00d4aa] text-black hover:bg-[#00b894]
                         disabled:bg-[#16213e] disabled:text-gray-600 disabled:cursor-not-allowed transition-all duration-200">
                 {isContinuing ? <span className="flex items-center justify-center gap-1"><CircularProgress size={14} color="inherit" /> Продолжение...</span> : 'Продолжить'}
               </button>
               <button onClick={onCompleteOrder} disabled={isProcessing}
-                className="w-full py-2.5 rounded-xl font-semibold text-sm bg-[#ff4757] text-white hover:bg-[#ff6b6b]
+                className="w-full flex-1 rounded-xl font-semibold text-sm bg-[#ff4757] text-white hover:bg-[#ff6b6b]
                         disabled:bg-[#16213e] disabled:text-gray-600 disabled:cursor-not-allowed transition-all duration-200">
                 {isCompleting ? <span className="flex items-center justify-center gap-1"><CircularProgress size={14} color="inherit" /> Завершение...</span> : 'Завершить'}
               </button>
@@ -111,11 +111,45 @@ export default function OrderInfo({
           {/* Завершён — Завершить */}
           {status === 'completed' && (
             <button onClick={onCompleteOrder} disabled={isProcessing}
-              className="w-full py-3 rounded-xl font-semibold text-sm bg-[#ff4757] text-white hover:bg-[#ff6b6b]
+              className="w-full flex-1 rounded-xl font-semibold text-sm bg-[#ff4757] text-white hover:bg-[#ff6b6b]
                       disabled:bg-[#16213e] disabled:text-gray-600 disabled:cursor-not-allowed transition-all duration-200">
               {isCompleting ? <span className="flex items-center justify-center gap-1"><CircularProgress size={16} color="inherit" /> Завершение...</span> : 'Завершить'}
             </button>
           )}
+        </div>
+      </div>
+
+      {/* Вторая строка: Внесено | 0.00 | Остаток | 0.00 */}
+      <div className="grid grid-cols-4 divide-x divide-[#2a2a45]">
+        <div className="p-3 flex flex-col">
+          <span className="text-[10px] uppercase tracking-wider font-semibold text-[#6c7293]">Внесено</span>
+        </div>
+        <div className="p-3 flex items-end">
+          <span className="text-lg font-mono font-bold text-[#d1d5db] bg-[#0a0a14] rounded-lg px-3 py-1.5 w-full text-right">
+            0,00
+          </span>
+        </div>
+        <div className="p-3 flex flex-col">
+          <span className="text-[10px] uppercase tracking-wider font-semibold text-[#6c7293]">Остаток</span>
+        </div>
+        <div className="p-3 flex items-end">
+          <span className="text-lg font-mono font-bold text-[#d1d5db] bg-[#0a0a14] rounded-lg px-3 py-1.5 w-full text-right">
+            0,00
+          </span>
+        </div>
+      </div>
+
+      {/* Третья строка: пусто | пусто | Выплачено | 0.00 */}
+      <div className="grid grid-cols-4 divide-x divide-[#2a2a45]">
+        <div className="p-3" />
+        <div className="p-3" />
+        <div className="p-3 flex flex-col">
+          <span className="text-[10px] uppercase tracking-wider font-semibold text-[#6c7293]">Выплачено</span>
+        </div>
+        <div className="p-3 flex items-end">
+          <span className="text-lg font-mono font-bold text-[#d1d5db] bg-[#0a0a14] rounded-lg px-3 py-1.5 w-full text-right">
+            0,00
+          </span>
         </div>
       </div>
     </div>
