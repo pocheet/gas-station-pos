@@ -153,6 +153,19 @@ export const PAYMENT_METHOD_LABELS: Record<number, string> = {
   [PAYMENT_METHODS.CASHLESS]: 'Безналичный',
 };
 
+export type OrderStatus = 'draft' | 'created' | 'fueling' | 'completed';
+
+export type Order = {
+  id: string;
+  pumpNumber: number;
+  status: OrderStatus;
+  items: OrderItem[];
+  totalSum: number;
+  totalDiscount: number;
+  totalAmount: number;
+  createdAt: string;
+};
+
 export type OrderItem = {
   id: string;
   pumpNumber: number;
@@ -162,7 +175,6 @@ export type OrderItem = {
   pricePerUnit: number;
   discountPercent: number | null;
   totalAmount: number;
-  timestamp: string;
 };
 
 export const OrderItemSchema = z.object({
@@ -174,5 +186,5 @@ export const OrderItemSchema = z.object({
   pricePerUnit: z.number(),
   discountPercent: z.number().nullable(),
   totalAmount: z.number(),
-  timestamp: z.string(),
+  // timestamp: z.string(),
 });

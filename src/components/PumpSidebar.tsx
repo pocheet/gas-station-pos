@@ -212,12 +212,12 @@ function NozzleCard({
 
   return (
     <button
-      onClick={() => pump.EnableService && onSelect(pump.Number, nozzle.Number)}
+      onClick={() => !disabled && onSelect(pump.Number, nozzle.Number)}
       disabled={disabled}
       className={`
         relative flex flex-col rounded-xl overflow-hidden
         transition-all duration-200 text-left
-        ${isSelected || isActiveNozzle ? 'ring-2 ring-[#00d4aa]/50' : 'ring-1 ring-transparent'}
+        ${isSelected ? 'ring-2 ring-[#00d4aa]/50' : 'ring-1 ring-transparent'}
         ${!disabled ? 'cursor-pointer hover:brightness-110' : 'opacity-60 cursor-not-allowed'}
       `}
       style={{ backgroundColor: '#0f3460' }}
@@ -293,9 +293,9 @@ export default function PumpSidebar({
       selectedPumpData.Status === PUMP_STATUS.WAIT_RESET
     : false;
 
-  // При переключении на "Диспенсер" — авто-выбор пистолета
+  // При переключении на "Диспенсер" — авто-выбор пистолета только если нет выбранного
   useEffect(() => {
-    if (viewMode === 'dispenser' && selectedPumpData && !selectedNozzle) {
+    if (viewMode === 'dispenser' && selectedPumpData && selectedNozzle === null) {
       const tx = selectedPumpData.Transaction;
       const hasTransaction = tx && tx.TransactionId !== '00000000-0000-0000-0000-000000000000';
       
@@ -323,6 +323,7 @@ export default function PumpSidebar({
   };
 
   const handleSelectNozzle = (pumpNumber: number, nozzleNumber: number) => {
+    if (isPumpLocked) return;
     onSelectPump(pumpNumber);
     onSelectNozzle(nozzleNumber);
   };

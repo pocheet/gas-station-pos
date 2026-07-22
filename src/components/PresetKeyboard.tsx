@@ -61,34 +61,6 @@ export default function PresetKeyboard({
 
   return (
     <div className="bg-[#1a1a2e] rounded-lg">
-      {/* Режим (Объем / Сумма) */}
-      {/* <div className="flex gap-2 mb-4">
-        <button
-          onClick={() => isPumpReady && onModeChange('volume')}
-          disabled={!isPumpReady}
-          className={`flex-1 py-2 rounded-xl font-medium transition-colors
-            ${mode === 'volume' 
-              ? 'bg-[#00d4aa] text-black' 
-              : 'bg-[#16213e] text-gray-300 hover:bg-[#0f3460]'
-            }
-            disabled:opacity-50 disabled:cursor-not-allowed`}
-        >
-          Объем
-        </button>
-        <button
-          onClick={() => isPumpReady && onModeChange('amount')}
-          disabled={!isPumpReady}
-          className={`flex-1 py-2 rounded-xl font-medium transition-colors
-            ${mode === 'amount' 
-              ? 'bg-[#ffd700] text-black' 
-              : 'bg-[#16213e] text-gray-300 hover:bg-[#0f3460]'
-            }
-            disabled:opacity-50 disabled:cursor-not-allowed`}
-        >
-          Сумма
-        </button>
-      </div> */}
-
       {/* Keyboard */}
       <div className="grid grid-cols-4 gap-2">
         {/* Ряд 1: Esc, C, ← */}
@@ -153,9 +125,9 @@ export default function PresetKeyboard({
           onClick={onStart}
           disabled={!canStart || isStarting || !isPumpReady}
           className="row-span-2 rounded-2xl font-semibold bg-[#00d4aa] text-black text-base font-bold
-                   hover:bg-[#00b894] active:bg-[#00a382]
-                   disabled:opacity-50 disabled:cursor-not-allowed
-                   transition-all duration-200 flex items-center justify-center"
+                  hover:bg-[#00b894] active:bg-[#00a382]
+                  disabled:opacity-50 disabled:cursor-not-allowed
+                  transition-all duration-200 flex items-center justify-center"
           style={{ aspectRatio: 'auto' }}
         >
           {isStarting ? <CircularProgress size={24} color="inherit" /> : 'Ввод'}
