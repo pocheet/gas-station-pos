@@ -9,6 +9,7 @@ import PumpControl from '../components/PumpControl';
 import PresetKeyboard from '../components/PresetKeyboard';
 import PaymentMethodSelector from '../components/PaymentMethodSelector';
 import TopNavbar from '../components/TopNavbar';
+import PaymentSettingsModal from '../components/PaymentSettingsModal';
 import Footer from '../components/Footer';
 
 import { PAYMENT_METHODS, PUMP_STATUS, type Order, type OrderItem } from '../types/schemas';
@@ -24,6 +25,7 @@ export default function MainPage() {
   const [payFormCode, setPayFormCode] = useState<number>(PAYMENT_METHODS.CASH);
   const [discountPercent, setDiscountPercent] = useState<number | null>(null);
   const [isStopped, setIsStopped] = useState(false);
+  const [showPaymentSettings, setShowPaymentSettings] = useState(false);
 
   const { data: config } = useConfiguration();
   const { data: state } = useEquipmentState();
@@ -36,6 +38,7 @@ export default function MainPage() {
 
   const pump = state?.PumpValuesCollection.find(p => p.Number === selectedPump);
   const currentOrder = selectedPump ? ordersMap[selectedPump] || null : null;
+  const pumpConfig = config?.Pumps.find(p => p.Number === selectedPump);
 
   const getBasePrice = () => {
     if (!selectedNozzle || !pump) return 0;
@@ -474,6 +477,7 @@ export default function MainPage() {
               onDiscountSelect={(percent) => {
                 setDiscountPercent(percent === discountPercent ? null : percent);
               }}
+              onPaymentSettingsClick={() => setShowPaymentSettings(true)}
             />
           </div>
 
@@ -498,6 +502,12 @@ export default function MainPage() {
             />
           </div>
         </aside>
+
+        <PaymentSettingsModal
+          open={showPaymentSettings}
+          onClose={() => setShowPaymentSettings(false)}
+          nozzles={pumpConfig?.Nozzles || []}
+        />
       </div>
 
       <Footer products={config?.Products} />

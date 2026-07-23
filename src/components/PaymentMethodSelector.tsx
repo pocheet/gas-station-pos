@@ -9,6 +9,7 @@ interface PaymentMethodSelectorProps {
   discountPercent: number | null;
   onDiscountClick?: () => void;
   onDiscountSelect: (percent: number) => void;
+  onPaymentSettingsClick?: () => void;
 }
 
 const paymentMethods = [
@@ -42,6 +43,7 @@ export default function PaymentMethodSelector({
   disabled = false,
   discountPercent,
   onDiscountSelect,
+  onPaymentSettingsClick,
 }: PaymentMethodSelectorProps) {
   const [showDiscount, setShowDiscount] = useState(false);
   const discountRef = useRef<HTMLDivElement>(null);
@@ -118,11 +120,13 @@ export default function PaymentMethodSelector({
       <div className="grid grid-cols-2 gap-2">
         {/* Кнопка Настройка оплаты (бывш. Техн.) */}
         <button
-          disabled
+          onClick={onPaymentSettingsClick}
+          disabled={disabled}
           className="relative flex flex-col justify-between h-[80px] p-3 rounded-lg 
                    transition-all duration-200 text-left
                    bg-[#0f3460]/20 border-2 border-transparent
-                   opacity-50 cursor-not-allowed"
+                   hover:bg-[#16213e] hover:border-gray-600
+                   disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           <div className="self-end text-gray-500">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
