@@ -189,8 +189,10 @@ function PumpCard({
   );
 }
 
-// NozzleCard — выбор пистолета
-function NozzleCard({ 
+
+// Карточка пистолета (для режима "Диспенсер")
+
+function NozzleCard({
   pump, 
   nozzle,
   isSelected,
@@ -205,7 +207,6 @@ function NozzleCard({
   disabled?: boolean;
   isActiveNozzle?: boolean;
 }) {
-  // Цвет только для выбранного пистолета
   const activeColor = '#00d4aa';
   const nozzleColor = isSelected ? activeColor : '#6b7280';
   const isBusy = pump.Status === PUMP_STATUS.BUSY || pump.Status === PUMP_STATUS.BUSY_OVERFLOW;
@@ -244,23 +245,26 @@ function NozzleCard({
           </span>
         </div>
 
-        {/* Средний ряд: замок, "Стоимость", цена */}
+        {/* Средний ряд: замок, "Цена", значение */}
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5 flex-1 min-w-0">
-            <span className="flex-shrink-0">
-              <LockIcon locked={!!pump.LockTag} color={nozzleColor} />
-            </span>
+          <span className="flex-shrink-0">
+            <LockIcon locked={!!pump.LockTag} color={nozzleColor} />
+          </span>
+          <div className="flex items-center gap-1 flex-1 justify-end min-w-0">
             <span className="text-[9px] uppercase tracking-wider font-medium text-[#6c7293]">
-              Стоимость
+              Цена
+            </span>
+            <span className="flex-shrink-0 font-mono font-bold text-right" style={{ color: '#ffd700', fontSize: '12px' }}>
+              {formatAmount(nozzle.DefaultPricePerUnit)}
             </span>
           </div>
-          <span className="flex-shrink-0 font-mono font-bold text-right" style={{ color: '#ffd700', fontSize: '12px' }}>
-            {formatAmount(nozzle.DefaultPricePerUnit)}
-          </span>
         </div>
 
-        {/* Нижний ряд: суммарный объём справа */}
-        <div className="flex items-center justify-end">
+        {/* Нижний ряд: "Объем", значение справа */}
+        <div className="flex items-center justify-end gap-1">
+          <span className="text-[9px] uppercase tracking-wider font-medium text-[#6c7293]">
+            Объем
+          </span>
           <span className="font-mono font-bold" style={{ color: '#e8e8f0', fontSize: '18px' }}>
             {formatVolume(nozzle.VolumeTotalCounter)}
           </span>
@@ -329,8 +333,8 @@ export default function PumpSidebar({
   };
 
   return (
-    <nav className="w-[380px] bg-[#1a1a2e] overflow-y-auto border-r border-gray-700 flex-shrink-0 my-5 rounded-r-2xl flex flex-col">
-      <div className="p-4 pb-0">
+    <nav className="w-[380px] bg-[#1a1a2e] overflow-y-auto border-r border-gray-700 flex-shrink-0 flex flex-col my-5 rounded-r-2xl">
+      <div className="p-2 pb-0">
         {/* Переключатели режимов */}
         <div className="grid grid-cols-2 gap-2 mb-2">
           <button
@@ -360,7 +364,7 @@ export default function PumpSidebar({
         </div>
 
         {/* Показания состояния диспенсера */}
-        <div className="py-2 px-3 mb-2 rounded-xl bg-[#0f3460]/20 border border-[#2a2a45]">
+        <div className="py-2 px-3 mb-2 rounded-xl bg-[#0f3460]/20 border border-[#2a2a45] text-center">
           <span className="text-xs text-gray-400">
             Показания состояния диспенсера:{' '}
             <span className="text-[#00d4aa] font-bold">
@@ -371,7 +375,7 @@ export default function PumpSidebar({
       </div>
 
       {/* Контент */}
-      <div className="p-4 flex-1">
+      <div className="p-2 flex-1">
         {viewMode === 'dispenser' ? (
           selectedPumpData ? (
             <div className="grid grid-cols-2 gap-2">
@@ -414,23 +418,23 @@ export default function PumpSidebar({
         )}
       </div>
 
-      <style>{`
-        @keyframes marquee {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        .animate-marquee {
-          animation: marquee 6s linear infinite;
-        }
-        
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(200%); }
-        }
-        .animate-shimmer {
-          animation: shimmer 1.5s infinite;
-        }
-      `}</style>
+      {/* Кнопка "Назад" — только в режиме Диспенсер */}
+      {viewMode === 'dispenser' && (
+        <div className="p-2 pt-0">
+          <button
+            onClick={() => setViewMode('dispensers')}
+            className="w-full py-2.5 rounded-xl font-semibold text-sm transition-all duration-200
+                     bg-[#0f3460]/20 text-gray-400 hover:bg-[#16213e] hover:text-gray-300
+                     border-2 border-transparent hover:border-gray-600
+                     flex items-center justify-center gap-2"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M11 3L5 8L11 13"/>
+            </svg>
+            Назад
+          </button>
+        </div>
+      )}
     </nav>
   );
 }

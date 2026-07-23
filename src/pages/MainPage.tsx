@@ -21,7 +21,7 @@ export default function MainPage() {
   const [selectedNozzle, setSelectedNozzle] = useState<number | null>(null);
   const [presetMode, setPresetMode] = useState<'volume' | 'amount'>('volume');
   const [presetValue, setPresetValue] = useState('0');
-  const [payFormCode, setPayFormCode] = useState<number>(PAYMENT_METHODS.TECHNOLOGICAL);
+  const [payFormCode, setPayFormCode] = useState<number>(PAYMENT_METHODS.CASH);
   const [discountPercent, setDiscountPercent] = useState<number | null>(null);
   const [isStopped, setIsStopped] = useState(false);
 
@@ -463,36 +463,40 @@ export default function MainPage() {
         </main>
 
         {/* Правая панель */}
-        <aside className="w-[350px] bg-[#1a1a2e] overflow-y-auto border-l border-gray-700 p-4 my-5 rounded-l-2xl">
-          <PaymentMethodSelector
-            value={payFormCode}
-            onChange={setPayFormCode}
-            disabled={!pump || pump.Status !== PUMP_STATUS.OFF || isKeyboardLocked}
-            discountPercent={discountPercent}
-            onDiscountSelect={(percent) => {
-              setDiscountPercent(percent === discountPercent ? null : percent);
-            }}
-          />
+        <aside className="w-[350px] bg-[#1a1a2e] overflow-y-auto border-l border-gray-700 p-4 my-5 rounded-l-2xl flex flex-col">
+          {/* PaymentMethodSelector — прижат к верху */}
+          <div>
+            <PaymentMethodSelector
+              value={payFormCode}
+              onChange={setPayFormCode}
+              disabled={!pump || pump.Status !== PUMP_STATUS.OFF || isKeyboardLocked}
+              discountPercent={discountPercent}
+              onDiscountSelect={(percent) => {
+                setDiscountPercent(percent === discountPercent ? null : percent);
+              }}
+            />
+          </div>
 
-          <div className="border-t border-gray-700 my-4" />
-
-          <PresetKeyboard
-            mode={presetMode}
-            value={presetValue}
-            onModeChange={setPresetMode}
-            onValueChange={setPresetValue}
-            selectedNozzle={selectedNozzle}
-            onStart={handleAddItem}
-            isStarting={false}
-            canStart={
-              !!selectedNozzle && 
-              presetValue !== '0' && 
-              currentOrder?.status === 'draft' &&
-              pump?.Status === PUMP_STATUS.OFF
-            }
-            pricePerUnit={getPricePerUnit()}
-            pumpStatus={isKeyboardLocked ? -1 : pump?.Status}
-          />
+          {/* PresetKeyboard — прижат к низу */}
+          <div className="mt-auto">
+            <PresetKeyboard
+              mode={presetMode}
+              value={presetValue}
+              onModeChange={setPresetMode}
+              onValueChange={setPresetValue}
+              selectedNozzle={selectedNozzle}
+              onStart={handleAddItem}
+              isStarting={false}
+              canStart={
+                !!selectedNozzle && 
+                presetValue !== '0' && 
+                currentOrder?.status === 'draft' &&
+                pump?.Status === PUMP_STATUS.OFF
+              }
+              pricePerUnit={getPricePerUnit()}
+              pumpStatus={isKeyboardLocked ? -1 : pump?.Status}
+            />
+          </div>
         </aside>
       </div>
 

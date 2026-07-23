@@ -13,17 +13,6 @@ interface PaymentMethodSelectorProps {
 
 const paymentMethods = [
   {
-    id: PAYMENT_METHODS.TECHNOLOGICAL,
-    label: 'Техн.',
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-        <line x1="8" y1="21" x2="16" y2="21"/>
-        <line x1="12" y1="17" x2="12" y2="21"/>
-      </svg>
-    ),
-  },
-  {
     id: PAYMENT_METHODS.CASH,
     label: 'Нал.',
     icon: (
@@ -83,10 +72,9 @@ export default function PaymentMethodSelector({
 
   return (
     <div className="mb-2">
-
-      {/* Первый ряд: 2 способа оплаты */}
+      {/* Первый ряд: Нал. | Безнал. */}
       <div className="grid grid-cols-2 gap-2 mb-2">
-        {paymentMethods.slice(0, 2).map((method) => {
+        {paymentMethods.map((method) => {
           const isSelected = value === method.id;
           
           return (
@@ -126,48 +114,29 @@ export default function PaymentMethodSelector({
         })}
       </div>
 
-      {/* Второй ряд: 1 способ оплаты + Скидка */}
+      {/* Второй ряд: Настройка оплаты | Топливная карта */}
       <div className="grid grid-cols-2 gap-2">
-        {paymentMethods.slice(2, 3).map((method) => {
-          const isSelected = value === method.id;
-          
-          return (
-            <button
-              key={method.id}
-              onClick={() => !disabled && onChange(method.id)}
-              disabled={disabled}
-              className={`
-                relative flex flex-col justify-between h-[80px] p-3 rounded-lg 
-                transition-all duration-200 text-left
-                ${isSelected 
-                  ? 'bg-[#16213e] border-2 border-[#00d4aa]' 
-                  : 'bg-[#0f3460]/20 border-2 border-transparent hover:bg-[#16213e] hover:border-gray-600'
-                }
-                ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-              `}
-            >
-              <div className={`self-end transition-colors ${
-                isSelected ? 'text-[#00d4aa]' : 'text-gray-500'
-              }`}>
-                {method.icon}
-              </div>
-              <div>
-                <div className={`text-xs font-medium transition-colors ${
-                  isSelected ? 'text-[#00d4aa]' : 'text-gray-400'
-                }`}>
-                  {method.label}
-                </div>
-                <div className={`text-[10px] mt-0.5 transition-colors ${
-                  isSelected ? 'text-gray-400' : 'text-gray-600'
-                }`}>
-                  Способ оплаты
-                </div>
-              </div>
-            </button>
-          );
-        })}
+        {/* Кнопка Настройка оплаты (бывш. Техн.) */}
+        <button
+          disabled
+          className="relative flex flex-col justify-between h-[80px] p-3 rounded-lg 
+                   transition-all duration-200 text-left
+                   bg-[#0f3460]/20 border-2 border-transparent
+                   opacity-50 cursor-not-allowed"
+        >
+          <div className="self-end text-gray-500">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+          </div>
+          <div>
+            <div className="text-xs font-medium text-gray-400">Настройка</div>
+            <div className="text-[10px] mt-0.5 text-gray-600">Оплаты</div>
+          </div>
+        </button>
 
-        {/* Кнопка Скидка */}
+        {/* Кнопка Топливная карта (бывш. Скидка) */}
         <div className="relative" ref={discountRef}>
           <button
             onClick={handleDiscountClick}
@@ -186,10 +155,8 @@ export default function PaymentMethodSelector({
               discountPercent !== null ? 'text-[#ffa502]' : 'text-gray-500'
             }`}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M16 8l-8 8"/>
-                <path d="M8.5 8.5h.01"/>
-                <path d="M15.5 15.5h.01"/>
+                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                <line x1="1" y1="10" x2="23" y2="10"/>
               </svg>
             </div>
             <div>
@@ -201,7 +168,7 @@ export default function PaymentMethodSelector({
               <div className={`text-[10px] mt-0.5 transition-colors ${
                 discountPercent !== null ? 'text-[#ffa502]' : 'text-gray-600'
               }`}>
-                Скидка
+                Топливная карта
               </div>
             </div>
           </button>
